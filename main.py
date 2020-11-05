@@ -2,6 +2,7 @@ import tweepy
 from tweepy.parsers import JSONParser
 import requests
 import re
+import goslate
 from lxml import html
 import pandas as pd
 
@@ -17,7 +18,8 @@ countries = countries[3:-142]
 # SETTING UP THE DATAFRAME
 df = pd.DataFrame(index = countries, columns = ["Counter"])
 df.loc[:, :] = 0
-print(df)
+#print(df)
+
 
 # TWITTER DATA
 consumer_key= 'CKXyrLIRjOoEPwDisGM3uLvSN'
@@ -31,10 +33,13 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, parser = JSONParser())
 
 keyword = "#TrumpvsBiden" 
-numTweets = 1
+numTweets = 20
 tweets = api.search(keyword, count = numTweets)
+
+gs = goslate.Goslate()
 
 #print(tweets)
 
-#for tweet in tweets["statuses"]:
-    #print(tweet["user"]["location"])
+for tweet in tweets["statuses"]:
+    print(tweet["user"]["location"], gs.translate( tweet["user"]["location"],'en'))
+
