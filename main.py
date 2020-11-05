@@ -9,15 +9,15 @@ import pandas as pd
 #GET THE LIST OF COUNTRIES, SCRAPPING WIKIPEDIA
 response = requests.get("https://en.wikipedia.org/wiki/List_of_sovereign_states")
 tree = html.fromstring(response.text)
-table = tree.xpath("//table[1]/tbody/tr/td[1]/text()")
+table = tree.xpath("//table[1]/tbody/tr/td[1]//a/text()")
 regex = re.compile('^([ ]+)|.[^a-zA-Z ].|([ ]+)$|[^a-zA-Z ]'); # Try to reduce complexity of this regex, but maintaining functionality
 countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", list(map(lambda x: regex.sub("", x), table))))
-#print(countries)
+countries = countries[3:-142]
 
 # SETTING UP THE DATAFRAME
 df = pd.DataFrame(index = countries, columns = ["Counter"])
 df.loc[:, :] = 0
-#print(df)
+print(df)
 
 # TWITTER DATA
 consumer_key= 'CKXyrLIRjOoEPwDisGM3uLvSN'
@@ -31,8 +31,10 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, parser = JSONParser())
 
 keyword = "#TrumpvsBiden" 
-numTweets = 2
+numTweets = 1
 tweets = api.search(keyword, count = numTweets)
 
+#print(tweets)
+
 #for tweet in tweets["statuses"]:
-#    print(tweet)
+    #print(tweet["user"]["location"])
