@@ -16,12 +16,12 @@ countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", l
 countries = countries[3:-142]
 
 # SETTING UP THE DATAFRAME
-df = pd.DataFrame(index = countries, columns = ["Counter"])
-df.loc[:, :] = 0
+dfCountries = pd.DataFrame(index = countries, columns = ["Counter"])
+dfCountries.loc[:, :] = 0
 #print(df)
 
 
-# TWITTER DATA
+# CRAWL TWITTER DATA
 consumer_key= 'CKXyrLIRjOoEPwDisGM3uLvSN'
 consumer_secret= '4F9Xg0kawfekbMkt96Tjo97o7RzTz2LV9UKxYiuc5nVFOOOT9K'
 access_token= '988767977796403201-vqhmrMjU30V2FceVUGC6AyQeox1FAOD'
@@ -33,13 +33,19 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, parser = JSONParser())
 
 keyword = "#TrumpvsBiden" 
-numTweets = 20
-tweets = api.search(keyword, count = numTweets)
+numTweets = 2
+tweets = api.search(keyword + " -filter:retweets", count = numTweets)
 
-gs = goslate.Goslate()
+#gs = goslate.Goslate()
 
-#print(tweets)
-
+dfTweets = pd.DataFrame(columns = ["Tweet"])
+#print(dfTweets)
 for tweet in tweets["statuses"]:
-    print(tweet["user"]["location"], gs.translate( tweet["user"]["location"],'en'))
+   #print(tweet["user"]["location"], gs.translate( tweet["user"]["location"],'en'))
+   dfTweets = dfTweets.append({"Tweet": tweet["text"]}, ignore_index = True)
+
+print(dfTweets)
+
+
+
 
