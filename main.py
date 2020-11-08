@@ -2,7 +2,7 @@ import tweepy
 from tweepy.parsers import JSONParser
 import requests
 import re
-import goslate
+from googletrans import Translator
 from lxml import html
 import pandas as pd
 
@@ -18,6 +18,7 @@ countries = countries[3:-142]
 # SETTING UP THE DATAFRAME
 dfCountries = pd.DataFrame(index = countries, columns = ["Counter"])
 dfCountries.loc[:, :] = 0
+unkownCountries = 0;
 #print(df)
 
 
@@ -32,19 +33,49 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth, parser = JSONParser())
 
-keyword = "#TrumpvsBiden" 
-numTweets = 2
+keyword = "#Forocoches"  #KEYWORD TO SEARCH
+numTweets = 5
 tweets = api.search(keyword + " -filter:retweets", count = numTweets)
 
-#gs = goslate.Goslate()
+translator = Translator()
 
 dfTweets = pd.DataFrame(columns = ["Tweet"])
 #print(dfTweets)
-for tweet in tweets["statuses"]:
-   #print(tweet["user"]["location"], gs.translate( tweet["user"]["location"],'en'))
-   dfTweets = dfTweets.append({"Tweet": tweet["text"]}, ignore_index = True)
 
-print(dfTweets)
+############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
+DEBUG_CLASSIFICATION_COUNTRIES = False
+#########################################################################################
+for tweet in tweets["statuses"]:
+   try: 
+      loc = translator.translate(tweet["user"]["location"], dest = 'en').text
+      if(DEBUG_CLASSIFICATION_COUNTRIES): print("The location of the tweet:", loc)
+      flagUnkown = True
+      for word in loc.split():
+         if(DEBUG_CLASSIFICATION_COUNTRIES): print("Checking", word)
+         if (word in dfCountries.index):
+            if(DEBUG_CLASSIFICATION_COUNTRIES): print(word, "appears in the dataframe")
+            dfCountries.loc[word, "Counter"] += 1
+            if(DEBUG_CLASSIFICATION_COUNTRIES): print("Increased cound for", word, "in the dataframe")
+            flagUnkown = False
+            break
+
+      if(flagUnkown):
+         if(DEBUG_CLASSIFICATION_COUNTRIES): print("Could not find a country")
+         unkownCountries += 1
+      #print(tweet["text"])
+   except Exception as er:
+      unkownCountries += 1
+      if(DEBUG_CLASSIFICATION_COUNTRIES): print("Something went wrong:", er) 
+   #dfTweets = dfTweets.append({"Tweet": tweet["text"]}, ignore_index = True)
+
+############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION INFO FOR THE TWEETS ############
+DEBUG_CLASSIFIED_COUNTRIES = False
+if(DEBUG_CLASSIFIED_COUNTRIES):
+   print(dfCountries)
+   print("Number of tweets without contry:", unkownCountries)
+   print(dfCountries.loc["Spain"])
+######################################################################################
+#print(dfTweets)
 
 
 
