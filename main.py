@@ -33,9 +33,9 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth, parser = JSONParser())
 
-keyword = "#Forocoches"  #KEYWORD TO SEARCH
-numTweets = 5
-tweets = api.search(keyword + " -filter:retweets", count = numTweets)
+keyword = "#9raciasLuis"  #KEYWORD TO SEARCH
+numTweets = 1
+tweets = api.search(keyword + " -filter:retweets", count = numTweets, tweet_mode='extended')
 
 translator = Translator()
 
@@ -45,7 +45,16 @@ dfTweets = pd.DataFrame(columns = ["Tweet"])
 ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
 DEBUG_CLASSIFICATION_COUNTRIES = False
 #########################################################################################
+#print("Reached")
 for tweet in tweets["statuses"]:
+   print(tweet["full_text"])
+   regexHash = re.compile("(#[A-Za-z0-9_]*)")
+   hashtags = regexHash.findall(tweet["full_text"])
+   telf = re.findall("[0-9]{9}", tweet["full_text"]);
+   print("telefono", telf)
+   print("num hashtags", len(hashtags))
+   if((len(hashtags) > 8) or telf):
+      print("Detected as spam")
    try: 
       loc = translator.translate(tweet["user"]["location"], dest = 'en').text
       if(DEBUG_CLASSIFICATION_COUNTRIES): print("The location of the tweet:", loc)
