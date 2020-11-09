@@ -18,7 +18,7 @@ countries = countries[3:-142]
 # SETTING UP THE DATAFRAME
 dfCountries = pd.DataFrame(index = countries, columns = ["Counter"])
 dfCountries.loc[:, :] = 0
-unkownCountries = 0;
+unkownCountries = 0
 #print(df)
 
 
@@ -33,9 +33,9 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth, parser = JSONParser())
 
-keyword = "#Forocoches"  #KEYWORD TO SEARCH
-numTweets = 5
-tweets = api.search(keyword + " -filter:retweets", count = numTweets)
+keyword = "#esc250"  #KEYWORD TO SEARCH
+numTweets = 2
+tweets = api.search(keyword + " -filter:retweets", count = numTweets, tweet_mode='extended')
 
 translator = Translator()
 
@@ -43,9 +43,10 @@ dfTweets = pd.DataFrame(columns = ["Tweet"])
 #print(dfTweets)
 
 ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
-DEBUG_CLASSIFICATION_COUNTRIES = False
+DEBUG_CLASSIFICATION_COUNTRIES = True
 #########################################################################################
 for tweet in tweets["statuses"]:
+   print(tweet["full_text"])
    try: 
       loc = translator.translate(tweet["user"]["location"], dest = 'en').text
       if(DEBUG_CLASSIFICATION_COUNTRIES): print("The location of the tweet:", loc)
@@ -69,7 +70,7 @@ for tweet in tweets["statuses"]:
    #dfTweets = dfTweets.append({"Tweet": tweet["text"]}, ignore_index = True)
 
 ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION INFO FOR THE TWEETS ############
-DEBUG_CLASSIFIED_COUNTRIES = False
+DEBUG_CLASSIFIED_COUNTRIES = True
 if(DEBUG_CLASSIFIED_COUNTRIES):
    print(dfCountries)
    print("Number of tweets without contry:", unkownCountries)
