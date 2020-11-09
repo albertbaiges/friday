@@ -5,6 +5,9 @@ import re
 from googletrans import Translator
 from lxml import html
 import pandas as pd
+import nltk 
+nltk.download("punkt")
+from nltk.tokenize import word_tokenize 
 
 
 #GET THE LIST OF COUNTRIES, SCRAPPING WIKIPEDIA
@@ -33,7 +36,7 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth, parser = JSONParser())
 
-keyword = "#9raciasLuis"  #KEYWORD TO SEARCH
+keyword = "#lasenzabv"  #KEYWORD TO SEARCH
 numTweets = 1
 tweets = api.search(keyword + " -filter:retweets", count = numTweets, tweet_mode='extended')
 
@@ -55,6 +58,11 @@ for tweet in tweets["statuses"]:
    print("num hashtags", len(hashtags))
    if((len(hashtags) > 8) or telf):
       print("Detected as spam")
+      continue
+
+   stopWordSpam = ["buy", "now", "click ", "here", "free", "shop" , "money", "back", "guarantee"]
+   tokens = word_tokenize(tweet["full_text"])
+   print(tokens)
    try: 
       loc = translator.translate(tweet["user"]["location"], dest = 'en').text
       if(DEBUG_CLASSIFICATION_COUNTRIES): print("The location of the tweet:", loc)
