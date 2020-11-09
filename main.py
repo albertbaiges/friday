@@ -60,8 +60,24 @@ for tweet in tweets["statuses"]:
       print("Detected as spam")
       continue
 
-   stopWordSpam = ["buy", "now", "click ", "here", "free", "shop" , "money", "back", "guarantee"]
-   tokens = word_tokenize(tweet["full_text"])
+   regexUserHash = re.compile("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]")
+   tweetCleanned = regexUserHash.sub("", tweet["full_text"]).lower()
+   stopWordSpam = ["buy", "now", "click ", "here", "free", "shop" , "money", "back", "guarantee", "discount", "viagra", "order", "here"]
+   tokens = word_tokenize(tweetCleanned)
+
+   for token in tokens:
+      i = tokens.index(token)
+      if (token == "shop" and tokens[i+1] == "now"):
+         print("it contained shop now")
+      elif (token == "buy" and tokens[i+1] == "now"):
+         print("it contained buy now")
+      elif (token == "click" and tokens[i+1] == "here"):
+         print("it contained click here")
+         elif (token == "order" and tokens[i+1] == "here"):
+         print("it contained order here")
+      elif (token == "money" and tokens[i+1] == "back" and tokens[i+2] == "guarantee"):
+         print("it contained shop now")
+
    print(tokens)
    try: 
       loc = translator.translate(tweet["user"]["location"], dest = 'en').text
