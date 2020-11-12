@@ -6,8 +6,11 @@ from googletrans import Translator
 from lxml import html
 import pandas as pd
 import nltk 
-nltk.download("punkt")
 from nltk.tokenize import word_tokenize 
+from nltk.corpus import stopwords
+
+nltk.download("punkt") # Pre-trained to tokenize in English
+nltk.download("stopwords") # List of stopwords, for multiple languages
 
 
 #GET THE LIST OF COUNTRIES, SCRAPPING WIKIPEDIA
@@ -48,20 +51,43 @@ dfTweets = pd.DataFrame(columns = ["Tweet"])
 ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
 DEBUG_CLASSIFICATION_COUNTRIES = False
 #########################################################################################
-#print("Reached")
+
+spamTweetsCounter = 0
 for tweet in tweets["statuses"]:
-   print(tweet["full_text"])
-   regexHash = re.compile("(#[A-Za-z0-9_]*)")
-   hashtags = regexHash.findall(tweet["full_text"])
+   # Getting text in the text
+   tweetText = tweet["full_text"]
+   ############ EARLY SPAM DETECTION ############ 
+   # Find hashtags in the tweet
+   hashtags = re.findall("#[A-Za-z0-9_]*)", tweet["full_text"])
+   # Find phone number in the tweet
    telf = re.findall("[0-9]{9}", tweet["full_text"]);
+   # DEBUG -> Display detected hashtags and/or phone number
    print("telefono", telf)
    print("num hashtags", len(hashtags))
+   # Mark as spam if too many hashtags or if contains phone number
    if((len(hashtags) > 8) or telf):
+      # DEBUG -> Display if it was marked as spam
       print("Detected as spam")
-      continue
+      spamTweetsCounter = spamTweetsCounter + 1
+      continue       # Skip further analysis
+   
+   # FUTHER SPAM DETECTION
+   # Clean de tweet text -> Removing hashtags and URLs
+   tweetCleaned = re.sub(("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweet["full_text"]));
+                        # There is no need to remove phone number because there are not, if it had phone number it was directly spam
 
-   regexUserHash = re.compile("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]")
-   tweetCleanned = regexUserHash.sub("", tweet["full_text"]).lower()
+   # Separate text into individual words (only works for english -> punkt is pretrained for english)
+   tweetTokens = word_tokenize(tweetCleaned)
+   # Convert text tokens to lower case
+   for i in range(len(tweetTokens)):
+      tweetTokens[i] = tweetTokens[i].lower()
+   # Remove stop words (tweetTokensNo)(S)top(W)ords
+   englishStopWords = stopwords.words("english")
+   tweetTokensNoSW = list(tweetTokens.filter(lambda x: x not in englishStopWords))
+
+
+   regexUserHash = re.compile)
+   tweetCleanned = regexUserHash.sub("", .lower()
    stopWordSpam = ["buy", "now", "click ", "here", "free", "shop" , "money", "back", "guarantee", "discount", "viagra", "order", "here"]
    tokens = word_tokenize(tweetCleanned)
 
