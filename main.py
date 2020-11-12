@@ -56,11 +56,12 @@ spamTweetsCounter = 0
 for tweet in tweets["statuses"]:
    # Getting text in the text
    tweetText = tweet["full_text"]
+   print(tweetText)
    ############ EARLY SPAM DETECTION ############ 
    # Find hashtags in the tweet
-   hashtags = re.findall("#[A-Za-z0-9_]*)", tweet["full_text"])
+   hashtags = re.findall("#[A-Za-z0-9_]*", tweet["full_text"])
    # Find phone number in the tweet
-   telf = re.findall("[0-9]{9}", tweet["full_text"]);
+   telf = re.findall("[0-9]{9}", tweet["full_text"])
    # DEBUG -> Display detected hashtags and/or phone number
    print("telefono", telf)
    print("num hashtags", len(hashtags))
@@ -73,38 +74,39 @@ for tweet in tweets["statuses"]:
    
    # FUTHER SPAM DETECTION
    # Clean de tweet text -> Removing hashtags and URLs
-   tweetCleaned = re.sub(("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweet["full_text"]));
+   tweetCleaned = re.sub("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweet["full_text"])
                         # There is no need to remove phone number because there are not, if it had phone number it was directly spam
+   print(tweetCleaned)
 
    # Separate text into individual words (only works for english -> punkt is pretrained for english)
    tweetTokens = word_tokenize(tweetCleaned)
+   print(tweetTokens)
    # Convert text tokens to lower case
    for i in range(len(tweetTokens)):
       tweetTokens[i] = tweetTokens[i].lower()
+   print(tweetTokens)
    # Remove stop words (tweetTokensNo)(S)top(W)ords
    englishStopWords = stopwords.words("english")
-   tweetTokensNoSW = list(tweetTokens.filter(lambda x: x not in englishStopWords))
+   tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
+   print(tweetTokensNoSW)
 
-
-   regexUserHash = re.compile)
-   tweetCleanned = regexUserHash.sub("", .lower()
-   stopWordSpam = ["buy", "now", "click ", "here", "free", "shop" , "money", "back", "guarantee", "discount", "viagra", "order", "here"]
-   tokens = word_tokenize(tweetCleanned)
-
-   for token in tokens:
-      i = tokens.index(token)
-      if (token == "shop" and tokens[i+1] == "now"):
-         print("it contained shop now")
-      elif (token == "buy" and tokens[i+1] == "now"):
-         print("it contained buy now")
-      elif (token == "click" and tokens[i+1] == "here"):
-         print("it contained click here")
-         elif (token == "order" and tokens[i+1] == "here"):
-         print("it contained order here")
-      elif (token == "money" and tokens[i+1] == "back" and tokens[i+2] == "guarantee"):
-         print("it contained shop now")
-
-   print(tokens)
+   #earlyFilter= ["buy", "now", "click ", "here", "free", "shop" , "money", "back", "guarantee", "discount", "viagra", "order", "here"]
+   #tokens = word_tokenize(tweetCleanned)
+#
+   #for token in tokens:
+   #   i = tokens.index(token)
+   #   if (token == "shop" and tokens[i+1] == "now"):
+   #      print("it contained shop now")
+   #   elif (token == "buy" and tokens[i+1] == "now"):
+   #      print("it contained buy now")
+   #   elif (token == "click" and tokens[i+1] == "here"):
+   #      print("it contained click here")
+   #      elif (token == "order" and tokens[i+1] == "here"):
+   #      print("it contained order here")
+   #   elif (token == "money" and tokens[i+1] == "back" and tokens[i+2] == "guarantee"):
+   #      print("it contained money back guarantee")
+#
+   #print(tokens)
    try: 
       loc = translator.translate(tweet["user"]["location"], dest = 'en').text
       if(DEBUG_CLASSIFICATION_COUNTRIES): print("The location of the tweet:", loc)
