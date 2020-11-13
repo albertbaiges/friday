@@ -21,7 +21,7 @@ regex = re.compile('^([ ]+)|.[^a-zA-Z ].|([ ]+)$|[^a-zA-Z ]'); # Try to reduce c
 countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", list(map(lambda x: regex.sub("", x), table))))
 countries = countries[3:-142]
 
-# SETTING UP THE DATAFRAME
+# SETTING UP THE DATAFRAME FOR COUNTRIES
 dfCountries = pd.DataFrame(index = countries, columns = ["Counter"])
 dfCountries.loc[:, :] = 0
 unkownCountries = 0;
@@ -90,7 +90,15 @@ for tweet in tweets["statuses"]:
    tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
    print(tweetTokensNoSW)
 
-   #earlyFilter= ["buy", "now", "click ", "here", "free", "shop" , "money", "back", "guarantee", "discount", "viagra", "order", "here"]
+   spamWordList = ["cash", "offer", "free", "samples", "exclusive", "discount", "been", "selected", "offer",
+                  "giveaway", "purchase", "now", "lose", "weight", "fast", "buy", "now", "click", "here", "entry", "win", "tickets",
+                  "chances", "to", "winner", "cash", "membership", "claim", "link", "please", "confirm", "subscribe", "reply", "shop", "money", "back", "guarantee", 
+                  "discount", "viagra", "order", "act", "action", "apply", "online", "direct", "call", "clearance", "deal", "expire", "get", "started", "important",
+                  "information", "instant", "limited", "time", "new", "customers", "only", "offer", "expires", "once", "lifetime", "read", "special", "promotion",
+                  "take", "last", "urgent", "stock", "stocks", "bargain", "best", "price", "bonus", "email", "marketing", "gift", "access", "trial", "incredible", 
+                  "deal", "do", "today", "unlimited", "visit", "website", "avoid", "cancel", "cheap", "certified", "congratulations", "credit", "card",
+                  "easy", "terms", "grant", "hosting", "info", "information", "member", "out", "debt", "giving", "away", "guaranteed", "join", "millions",
+                  "age", "restrictions", "winning", "consolidate", "earn", "extra", "hidden"]
    #tokens = word_tokenize(tweetCleanned)
 #
    #for token in tokens:
