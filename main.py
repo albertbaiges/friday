@@ -8,9 +8,11 @@ import pandas as pd
 import nltk 
 from nltk.tokenize import word_tokenize 
 from nltk.corpus import stopwords
+import fasttext
 
 nltk.download("punkt") # Pre-trained to tokenize in English
 nltk.download("stopwords") # List of stopwords, for multiple languages
+
 
 
 #GET THE LIST OF COUNTRIES, SCRAPPING WIKIPEDIA
@@ -39,7 +41,7 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth, parser = JSONParser())
 
-keyword = "#lasenzabv"  #KEYWORD TO SEARCH
+keyword = "#wpmalang"  #KEYWORD TO SEARCH
 numTweets = 1
 tweets = api.search(keyword + " -filter:retweets", count = numTweets, tweet_mode='extended')
 
@@ -70,17 +72,17 @@ for tweet in tweets["statuses"]:
       # DEBUG -> Display if it was marked as spam
       print("Detected as spam")
       spamTweetsCounter = spamTweetsCounter + 1
-      continue       # Skip further analysis
+      #continue       # Skip further analysis
    
    # FUTHER SPAM DETECTION
    # Clean de tweet text -> Removing hashtags and URLs
-   tweetCleaned = re.sub("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweet["full_text"])
+   tweetCleaned = re.sub("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweetText)
                         # There is no need to remove phone number because there are not, if it had phone number it was directly spam
    print(tweetCleaned)
    #Removing special characters
    tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned) 
    print(tweetCleaned)
-
+   textTweetCleaned = tweetCleaned
    # Separate text into individual words (only works for english -> punkt is pretrained for english)
    tweetTokens = word_tokenize(tweetCleaned)
    print(tweetTokens)
@@ -103,7 +105,7 @@ for tweet in tweets["statuses"]:
                   "take", "last", "urgent", "stock", "stocks", "bargain", "best", "price", "bonus", "email", "marketing", "gift", "access", "trial", "incredible", 
                   "deal", "do", "today", "unlimited", "visit", "website", "avoid", "cancel", "cheap", "certified", "congratulations", "credit", "card",
                   "easy", "terms", "grant", "hosting", "info", "information", "member", "out", "debt", "giving", "away", "guaranteed", "join", "millions",
-                  "age", "restrictions", "winning", "consolidate", "earn", "extra", "hidden"]
+                  "age", "restrictions", "winning", "consolidate", "earn", "extra", "hidden", "nude", "nudes", "message", "dm"]
    
    #tokens = word_tokenize(tweetCleanned)
    isSpam = 0
@@ -113,12 +115,19 @@ for tweet in tweets["statuses"]:
 
    print("Number of spam words", isSpam)
 
-   
 
-   prob = isSpam/len(tweetTokensNoSW)*100
+   prob = isSpam/len(tweetTokensNoSW)*100 # Will consider it to be spam above 20-25 %
    print(len(tweetTokensNoSW))
    print(prob)
 
+
+   model = fasttext.train_supervised("training.txt")
+   print("Joined cleaned tweet")
+   #print(' '.join(tweetTokensNoSW))
+   print(' '.join(tweetTokensNoSW))
+   print("Is spam detected with fasttext?")
+   prediction = model.predict(' '.join(tweetTokensNoSW))
+   print(prediction)
 
    #for token in tokens:
    #   i = tokens.index(token)
