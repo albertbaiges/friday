@@ -77,6 +77,9 @@ for tweet in tweets["statuses"]:
    tweetCleaned = re.sub("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweet["full_text"])
                         # There is no need to remove phone number because there are not, if it had phone number it was directly spam
    print(tweetCleaned)
+   #Removing special characters
+   tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned) 
+   print(tweetCleaned)
 
    # Separate text into individual words (only works for english -> punkt is pretrained for english)
    tweetTokens = word_tokenize(tweetCleaned)
@@ -90,6 +93,8 @@ for tweet in tweets["statuses"]:
    tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
    print(tweetTokensNoSW)
 
+
+
    spamWordList = ["cash", "offer", "free", "samples", "exclusive", "discount", "been", "selected", "offer",
                   "giveaway", "purchase", "now", "lose", "weight", "fast", "buy", "now", "click", "here", "entry", "win", "tickets",
                   "chances", "to", "winner", "cash", "membership", "claim", "link", "please", "confirm", "subscribe", "reply", "shop", "money", "back", "guarantee", 
@@ -99,8 +104,22 @@ for tweet in tweets["statuses"]:
                   "deal", "do", "today", "unlimited", "visit", "website", "avoid", "cancel", "cheap", "certified", "congratulations", "credit", "card",
                   "easy", "terms", "grant", "hosting", "info", "information", "member", "out", "debt", "giving", "away", "guaranteed", "join", "millions",
                   "age", "restrictions", "winning", "consolidate", "earn", "extra", "hidden"]
+   
    #tokens = word_tokenize(tweetCleanned)
-#
+   isSpam = 0
+   for token in tweetTokensNoSW:
+         if(token in spamWordList):
+            isSpam = isSpam + 1
+
+   print("Number of spam words", isSpam)
+
+   
+
+   prob = isSpam/len(tweetTokensNoSW)*100
+   print(len(tweetTokensNoSW))
+   print(prob)
+
+
    #for token in tokens:
    #   i = tokens.index(token)
    #   if (token == "shop" and tokens[i+1] == "now"):
