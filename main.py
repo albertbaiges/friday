@@ -51,9 +51,6 @@ translator = Translator()
 dfTweets = pd.DataFrame(columns = ["Tweet"])
 #print(dfTweets)
 
-############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
-DEBUG_CLASSIFICATION_COUNTRIES = True
-#########################################################################################
 
 spamTweetsCounter = 0
 for tweet in tweets["statuses"]:
@@ -130,21 +127,12 @@ for tweet in tweets["statuses"]:
    prediction = model.predict(' '.join(tweetTokensNoSW))
    print(prediction)
 
-   #for token in tokens:
-   #   i = tokens.index(token)
-   #   if (token == "shop" and tokens[i+1] == "now"):
-   #      print("it contained shop now")
-   #   elif (token == "buy" and tokens[i+1] == "now"):
-   #      print("it contained buy now")
-   #   elif (token == "click" and tokens[i+1] == "here"):
-   #      print("it contained click here")
-   #      elif (token == "order" and tokens[i+1] == "here"):
-   #      print("it contained order here")
-   #   elif (token == "money" and tokens[i+1] == "back" and tokens[i+2] == "guarantee"):
-   #      print("it contained money back guarantee")
-#
-   #print(tokens)
 
+   # TWEET LOCATION
+
+   ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
+   DEBUG_CLASSIFICATION_COUNTRIES = False
+   #########################################################################################
    try: 
       loc = translator.translate(tweet["user"]["location"], dest = 'en').text
       if(DEBUG_CLASSIFICATION_COUNTRIES): print("The location of the tweet:", loc)
@@ -168,7 +156,7 @@ for tweet in tweets["statuses"]:
    #dfTweets = dfTweets.append({"Tweet": tweet["text"]}, ignore_index = True)
 
 ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION INFO FOR THE TWEETS ############
-DEBUG_CLASSIFIED_COUNTRIES = True
+DEBUG_CLASSIFIED_COUNTRIES = False
 if(DEBUG_CLASSIFIED_COUNTRIES):
    print(dfCountries)
    print("Number of tweets without contry:", unkownCountries)
