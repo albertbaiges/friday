@@ -43,7 +43,7 @@ api = tweepy.API(auth, parser = JSONParser())
 
 
 keyword = "#wpmalang"  #KEYWORD TO SEARCH
-numTweets = 1
+numTweets = 2
 tweets = api.search(keyword + " -filter:retweets", count = numTweets, tweet_mode='extended')
 
 translator = Translator()
@@ -56,19 +56,19 @@ spamTweetsCounter = 0
 for tweet in tweets["statuses"]:
    # Getting text in the text
    tweetText = tweet["full_text"]
-   print(tweetText)
+   #print(tweetText)
    ############ EARLY SPAM DETECTION ############ 
    # Find hashtags in the tweet
    hashtags = re.findall("#[A-Za-z0-9_]*", tweet["full_text"])
    # Find phone number in the tweet
    telf = re.findall("[0-9]{9}", tweet["full_text"])
    # DEBUG -> Display detected hashtags and/or phone number
-   print("telefono", telf)
-   print("num hashtags", len(hashtags))
+   #print("telefono", telf)
+   #print("num hashtags", len(hashtags))
    # Mark as spam if too many hashtags or if contains phone number
    if((len(hashtags) > 8) or telf):
       # DEBUG -> Display if it was marked as spam
-      print("Detected as spam")
+      #print("Detected as spam")
       spamTweetsCounter = spamTweetsCounter + 1
       #continue       # Skip further analysis
    
@@ -76,22 +76,22 @@ for tweet in tweets["statuses"]:
    # Clean de tweet text -> Removing hashtags and URLs
    tweetCleaned = re.sub("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweetText)
                         # There is no need to remove phone number because there are not, if it had phone number it was directly spam
-   print(tweetCleaned)
+   #print(tweetCleaned)
    #Removing special characters
    tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned) 
-   print(tweetCleaned)
+   #print(tweetCleaned)
    textTweetCleaned = tweetCleaned
    # Separate text into individual words (only works for english -> punkt is pretrained for english)
    tweetTokens = word_tokenize(tweetCleaned)
-   print(tweetTokens)
+   #print(tweetTokens)
    # Convert text tokens to lower case
    for i in range(len(tweetTokens)):
       tweetTokens[i] = tweetTokens[i].lower()
-   print(tweetTokens)
+   #print(tweetTokens)
    # Remove stop words (tweetTokensNo)(S)top(W)ords
    englishStopWords = stopwords.words("english")
    tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
-   print(tweetTokensNoSW)
+   #print(tweetTokensNoSW)
 
 
 
@@ -111,23 +111,27 @@ for tweet in tweets["statuses"]:
          if(token in spamWordList):
             isSpam = isSpam + 1
 
-   print("Number of spam words", isSpam)
+   #print("Number of spam words", isSpam)
 
 
    prob = isSpam/len(tweetTokensNoSW)*100 # Will consider it to be spam above 20-25 %
-   print(len(tweetTokensNoSW))
-   print(prob)
+   #print(len(tweetTokensNoSW))
+   #print(prob)
 
 
    model = fasttext.train_supervised("training.txt")
-   print("Joined cleaned tweet")
+   #print("Joined cleaned tweet")
    #print(' '.join(tweetTokensNoSW))
-   print(' '.join(tweetTokensNoSW))
-   print("Is spam detected with fasttext?")
+   #print(' '.join(tweetTokensNoSW))
+   #print("Is spam detected with fasttext?")
    prediction = model.predict(' '.join(tweetTokensNoSW))
-   print(prediction)
+   #print(prediction)
 
-
+   # SENTIMENT ANALISIS
+   model_emotions = fasttext.train_supervised("training_emotions.txt")
+   prediction_emotion = model_emotions.predict("I really hated that thing")
+   print("Reached")
+   print(prediction_emotion)
    # TWEET LOCATION
 
    ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
