@@ -14,6 +14,11 @@ nltk.download("punkt") # Pre-trained to tokenize in English
 nltk.download("stopwords") # List of stopwords, for multiple languages
 
 
+######### WORDLIST FILTERS SENSITIVITIES [%] #########
+spamSensitivity = 20
+toxicitySensitivity = 20
+
+
 
 #GET THE LIST OF COUNTRIES, SCRAPPING WIKIPEDIA
 response = requests.get("https://en.wikipedia.org/wiki/List_of_sovereign_states")
@@ -28,6 +33,11 @@ dfCountries = pd.DataFrame(index = countries, columns = ["Counter"])
 dfCountries.loc[:, :] = 0
 unkownCountries = 0
 #print(df)
+
+# SETTING UP THE DATAFRAME FOR SENTIMENTS
+sentiments = ["empty", "sadness", "enthusiasm", "neutral", "worry", "surprise", "love", "fun", "hate", "happiness"]
+sentimentDF = pd.DataFrame(index = sentiments, columns = ["Counter"])
+sentimentDF.loc[:, :] = 0
 
 
 # CRAWL TWITTER DATA
@@ -53,6 +63,7 @@ dfTweets = pd.DataFrame(columns = ["Tweet"])
 
 
 spamTweetsCounter = 0
+toxicTweetsCounter = 0
 for tweet in tweets["statuses"]:
    # Getting text in the text
    tweetText = tweet["full_text"]
@@ -80,7 +91,6 @@ for tweet in tweets["statuses"]:
    #Removing special characters
    tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned) 
    #print(tweetCleaned)
-   textTweetCleaned = tweetCleaned
    # Separate text into individual words (only works for english -> punkt is pretrained for english)
    tweetTokens = word_tokenize(tweetCleaned)
    #print(tweetTokens)
@@ -92,7 +102,7 @@ for tweet in tweets["statuses"]:
    englishStopWords = stopwords.words("english")
    tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
    #print(tweetTokensNoSW)
-
+   tweetNoSW = ' '.join(tweetTokensNoSW)
 
 
    spamWordList = ["cash", "offer", "free", "samples", "exclusive", "discount", "been", "selected", "offer",
@@ -117,21 +127,72 @@ for tweet in tweets["statuses"]:
    prob = isSpam/len(tweetTokensNoSW)*100 # Will consider it to be spam above 20-25 %
    #print(len(tweetTokensNoSW))
    #print(prob)
-
+   if(prob >= toxicitySensitivity):
+      #print("Detected to be spam")
+      spamTweetsCounter += 1
+      #continue
 
    model = fasttext.train_supervised("training.txt")
    #print("Joined cleaned tweet")
    #print(' '.join(tweetTokensNoSW))
    #print(' '.join(tweetTokensNoSW))
    #print("Is spam detected with fasttext?")
-   prediction = model.predict(' '.join(tweetTokensNoSW))
+   prediction = model.predict(tweetNoSW)
    #print(prediction)
+
+   # TOXICITY DETECTION % TODO: Reduce the wordlist, we do not need so many words and slows down the app
+   toxicityWordList = ["4r5e", "5h1t", "5hit", "a55", "anal", "anus", "ar5e", "arrse", "arse", "ass", "ass-fucker", "asses", "assfucker", "assfukka", "asshole", "assholes",
+                     "asswhole", "a_s_s", "b!tch", "b00bs", "b17ch", "b1tch", "ballbag", "balls", "ballsack", "bastard", "beastial", "beastiality", "bellend", "bestial", "bestiality", "bi+ch",
+                     "biatch", "bitch", "bitcher", "bitchers", "bitches", "bitchin", "bitching", "bloody", "blow job", "blowjob", "blowjobs", "boiolas", "bollock", "bollok", "boner", "boob",
+                     "boobs", "booobs", "boooobs", "booooobs", "booooooobs", "breasts", "buceta", "bugger", "bum", "bunny fucker", "butt", "butthole", "buttmunch", "buttplug", "c0ck",
+                     "c0cksucker", "carpet muncher", "cawk", "chink", "cipa", "cl1t", "clit", "clitoris", "clits", "cnut", "cock", "cock-sucker", "cockface", "cockhead", "cockmunch",
+                     "cockmuncher", "cocks", "cocksuck ", "cocksucked ", "cocksucker", "cocksucking", "cocksucks ", "cocksuka", "cocksukka", "cok", "cokmuncher", "coksucka", "coon", "cox",
+                     "crap", "cum", "cummer", "cumming", "cums", "cumshot", "cunilingus", "cunillingus", "cunnilingus", "cunt", "cuntlick ", "cuntlicker ", "cuntlicking ", "cunts", "cyalis",
+                     "cyberfuc", "cyberfuck ", "cyberfucked ", "cyberfucker", "cyberfuckers", "cyberfucking ", "d1ck", "damn", "dick", "dickhead", "dildo", "dildos", "dink", "dinks", "dirsa",
+                     "dlck", "dog-fucker", "doggin", "dogging", "donkeyribber", "doosh", "duche", "dyke", "ejaculate", "ejaculated", "ejaculates ", "ejaculating ", "ejaculatings", "ejaculation",
+                     "ejakulate", "f4nny", "fag", "fagging", "faggitt", "faggot", "faggs", "fagot", "fagots", "fags", "fanny", "fannyflaps", "fannyfucker", "fanyy",
+                     "fatass", "fcuk", "fcuker", "fcuking", "feck", "fecker", "felching", "fellate", "fellatio", "fingerfuck ", "fingerfucked ", "fingerfucker ", "fingerfuckers", "fingerfucking",
+                     "fingerfucks", "fistfuck", "fistfucked", "fistfucker", "fistfuckers", "fistfucking", "fistfuckings", "fistfucks", "flange", "fook", "fooker", "fuck", "fucka", "fucked",
+                     "fucker", "fuckers", "fuckhead", "fuckheads", "fuckin", "fucking", "fuckings", "fuckingshitmotherfucker", "fuckme ", "fucks", "fuckwhit", "fuckwit", "fudge packer", 
+                     "fudgepacker", "fuk", "fuker", "fukker", "fukkin", "fuks", "fukwhit", "fukwit", "fux", "fux0r", "f_u_c_k", "gangbang", "gangbanged ", "gangbangs ", "gaylord", "gaysex", 
+                     "goatse", "God", "god-dam", "god-damned", "goddamn", "goddamned", "hardcoresex ", "hell", "heshe", "hoar", "hoare", "hoer", "homo", "hore", "horniest", "horny", "hotsex", 
+                     "jack-off ", "jackoff", "jap", "jerk-off ", "jism", "jiz ", "jizm ", "jizz", "kawk", "knob", "knobead", "knobed", "knobend", "knobhead", "knobjocky", "knobjokey", "kock", 
+                     "kondum", "kondums", "kum", "kummer", "kumming", "kums", "kunilingus", "l3i+ch", "l3itch", "labia", "lmfao", "lust", "lusting", "m0f0", "m0fo", "m45terbate", "ma5terb8", 
+                     "ma5terbate", "masochist", "master-bate", "masterb8", "masterbat*", "masterbat3", "masterbate", "masterbation", "masterbations", "masturbate", "mo-fo", "mof0", "mofo", 
+                     "mothafuck", "mothafucka", "mothafuckas", "mothafuckaz", "mothafucked ", "mothafucker", "mothafuckers", "mothafuckin", "mothafucking ", "mothafuckings", "mothafucks", 
+                     "mother fucker", "motherfuck", "motherfucked", "motherfucker", "motherfuckers", "motherfuckin", "motherfucking", "motherfuckings", "motherfuckka", "motherfucks", "muff", 
+                     "mutha", "muthafecker", "muthafuckker", "muther", "mutherfucker", "n1gga", "n1gger", "nazi", "nigg3r", "nigg4h", "nigga", "niggah", "niggas", "niggaz", "nigger", "niggers ", 
+                     "nob", "nob jokey", "nobhead", "nobjocky", "nobjokey", "numbnuts", "nutsack", "orgasim ", "orgasims ", "orgasm", "orgasms ", "p0rn", "pawn", "pecker", "penis", "penisfucker", 
+                     "phonesex", "phuck", "phuk", "phuked", "phuking", "phukked", "phukking", "phuks", "phuq", "pigfucker", "pimpis", "piss", "pissed", "pisser", "pissers", "pisses ", "pissflaps", 
+                     "pissin ", "pissing", "pissoff ", "poop", "porn", "porno", "pornography", "pornos", "prick", "pricks ", "pron", "pube", "pusse", "pussi", "pussies", "pussy", "pussys ", "rectum", 
+                     "retard", "rimjaw", "rimming", "s hit", "s.o.b.", "sadist", "schlong", "screwing", "scroat", "scrote", "scrotum", "semen", "sex", "sh!+", "sh!t", "sh1t", "shag", "shagger", "shaggin", 
+                     "shagging", "shemale", "shi+", "shit", "shitdick", "shite", "shited", "shitey", "shitfuck", "shitfull", "shithead", "shiting", "shitings", "shits", "shitted", "shitter", "shitters ", 
+                     "shitting", "shittings", "shitty ", "skank", "slut", "sluts", "smegma", "smut", "snatch", "son-of-a-bitch", "spac", "spunk", "s_h_i_t", "t1tt1e5", "t1tties", "teets", "teez", "testical", 
+                     "testicle", "tit", "titfuck", "tits", "titt", "tittie5", "tittiefucker", "titties", "tittyfuck", "tittywank", "titwank", "tosser", "turd", "tw4t", "twat", "twathead", "twatty", "twunt", 
+                     "twunter", "v14gra", "v1gra", "vagina", "viagra", "vulva", "w00se", "wang", "wank", "wanker", "wanky", "whoar", "whore", "willies", "willy", "xrated", "xxx"]
+   
+   isToxic = 0
+   for token in tweetTokensNoSW:
+         if(token in toxicityWordList):
+            isToxic = isToxic + 1
+   
+   prob = isToxic/len(tweetTokensNoSW)*100
+   if(prob >= toxicitySensitivity):
+      #print("Detected to be toxic")
+      toxicTweetsCounter += 1
+      #continue
+
+
 
    # SENTIMENT ANALISIS
    model_emotions = fasttext.train_supervised("training_emotions.txt")
-   prediction_emotion = model_emotions.predict("I really hated that thing")
+   prediction_emotion = model_emotions.predict(tweetNoSW)
    print("Reached")
-   print(prediction_emotion)
+   sentiment = re.sub("__label__", "", prediction_emotion[0][0]);
+   print(sentiment);
+   sentimentDF.loc[sentiment, "Counter"] += 1
+   print(sentimentDF)
+
    # TWEET LOCATION
 
    ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
