@@ -12,15 +12,6 @@ import fasttext
 import plotly.express as px
 
 
-
-from urllib.request import urlopen
-import json
-with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
-    counties = json.load(response)
-
-
-
-
 nltk.download("punkt") # Pre-trained to tokenize in English
 nltk.download("stopwords") # List of stopwords, for multiple languages
 
@@ -32,16 +23,16 @@ toxicitySensitivity = 20
 
 
 #GET THE LIST OF COUNTRIES, SCRAPPING WIKIPEDIA
-response = requests.get("https://en.wikipedia.org/wiki/List_of_sovereign_states")
-tree = html.fromstring(response.text)
-table = tree.xpath("//table[1]/tbody/tr/td[1]//a/text()")
-regex = re.compile('^([ ]+)|.[^a-zA-Z ].|([ ]+)$|[^a-zA-Z ]'); # Try to reduce complexity of this regex, but maintaining functionality
-countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", list(map(lambda x: regex.sub("", x), table))))
-countries = countries[3:-142]
+#response = requests.get("https://en.wikipedia.org/wiki/List_of_sovereign_states")
+#tree = html.fromstring(response.text)
+#table = tree.xpath("//table[1]/tbody/tr/td[1]//a/text()")
+#regex = re.compile('^([ ]+)|.[^a-zA-Z ].|([ ]+)$|[^a-zA-Z ]'); # Try to reduce complexity of this regex, but maintaining functionality
+#countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", list(map(lambda x: regex.sub("", x), table))))
+#countries = countries[3:-142]
 
 # SETTING UP THE DATAFRAME FOR COUNTRIES
-dfCountries = pd.DataFrame(index = countries, columns = ["Counter"])
-dfCountries.loc[:, :] = 0
+#dfCountries = pd.DataFrame(index = countries, columns = ["Counter", "Fips"])
+#dfCountries.loc[:, "Counter"] = 0
 unkownCountries = 0
 #print(df)
 
@@ -50,6 +41,32 @@ sentiments = ["empty", "sadness", "enthusiasm", "neutral", "worry", "surprise", 
 sentimentDF = pd.DataFrame(index = sentiments, columns = ["Counter"])
 sentimentDF.loc[:, :] = 0
 
+
+# GET THE 3 CODE FIPS FOR COUNTRIES
+response = requests.get("https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3")
+tree = html.fromstring(response.text)
+codes = tree.xpath('//div/div[@class="plainlist"]')
+fipsPairs = codes[0].text_content()[63:]
+print(fipsPairs)
+fipsPairs = fipsPairs.replace(u'\xa0', u' ') # Prevents \xa0 between words
+fipsPairs = re.sub(" \(.*\)", "", fipsPairs)
+listFipsPairs = fipsPairs.split("\n")[:-1] # Up to -1 to remove a last empty string in the list
+
+countryCodes = []
+countryNames = []
+
+for i in range(len(listFipsPairs)):
+   (code, *country) = listFipsPairs[i].split()
+   countryCodes.append(code)
+   countryNames.append(" ".join(country))
+
+dfCountries = pd.DataFrame(index = countryNames, columns = ["Counter"])
+dfCountries.loc[:, "Counter"] = 0
+dfCountries.insert(1, "Code", countryCodes)
+
+
+#print(dfCountries)
+print(dfCountries.to_string())
 
 # CRAWL TWITTER DATA
 consumer_key= 'CKXyrLIRjOoEPwDisGM3uLvSN'
@@ -245,6 +262,6 @@ if(DEBUG_CLASSIFIED_COUNTRIES):
 ######################################################################################
 #print(dfTweets)
 
-
-
-
+fig = px.choropleth(dfCountries, locations="Code",
+                    color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
+fig.show()
