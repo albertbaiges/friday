@@ -18,16 +18,16 @@ nltk.download("stopwords") # List of stopwords, for multiple languages
 
 
 #GET THE LIST OF COUNTRIES, SCRAPPING WIKIPEDIA
-response = requests.get("https://en.wikipedia.org/wiki/List_of_sovereign_states")
-tree = html.fromstring(response.text)
-table = tree.xpath("//table[1]/tbody/tr/td[1]//a/text()")
-regex = re.compile('^([ ]+)|.[^a-zA-Z ].|([ ]+)$|[^a-zA-Z ]'); # Try to reduce complexity of this regex, but maintaining functionality
-countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", list(map(lambda x: regex.sub("", x), table))))
-countries = countries[3:-142]
+#response = requests.get("https://en.wikipedia.org/wiki/List_of_sovereign_states")
+#tree = html.fromstring(response.text)
+#table = tree.xpath("//table[1]/tbody/tr/td[1]//a/text()")
+#regex = re.compile('^([ ]+)|.[^a-zA-Z ].|([ ]+)$|[^a-zA-Z ]'); # Try to reduce complexity of this regex, but maintaining functionality
+#countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", list(map(lambda x: regex.sub("", x), table))))
+#countries = countries[3:-142]
 
 # SETTING UP THE DATAFRAME FOR COUNTRIES
-dfCountries = pd.DataFrame(index = countries, columns = ["Counter", "Fips"])
-dfCountries.loc[:, "Counter"] = 0
+#dfCountries = pd.DataFrame(index = countries, columns = ["Counter", "Fips"])
+#dfCountries.loc[:, "Counter"] = 0
 unkownCountries = 0
 #print(df)
 
@@ -42,11 +42,18 @@ fipsPairs = fipsPairs.replace(u'\xa0', u' ') # Prevents \xa0 between words
 fipsPairs = re.sub(" \(.*\)", "", fipsPairs)
 listFipsPairs = fipsPairs.split("\n")[:-1] # Up to -1 to remove a last empty string in the list
 
+countryCodes = []
+countryNames = []
+
 for i in range(len(listFipsPairs)):
-   (fip, *country) = listFipsPairs[i].split()
-   country = " ".join(country)
-   if(country in countries):
-      dfCountries.loc[country, "Fips"] = fip
+   (code, *country) = listFipsPairs[i].split()
+   countryCodes.append(code)
+   countryNames.append(" ".join(country))
+
+dfCountries = pd.DataFrame(index = countryNames, columns = ["Counter"])
+dfCountries.loc[:, "Counter"] = 0
+dfCountries.insert(1, "Code", countryCodes)
+
 
 #print(dfCountries)
 print(dfCountries.to_string())
@@ -185,7 +192,6 @@ if(DEBUG_CLASSIFIED_COUNTRIES):
 ######################################################################################
 #print(dfTweets)
 
-fig = px.choropleth(dfCountries, locations="Fips",
+fig = px.choropleth(dfCountries, locations="Code",
                     color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
 fig.show()
-
