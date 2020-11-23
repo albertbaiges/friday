@@ -9,6 +9,8 @@ import nltk
 from nltk.tokenize import word_tokenize 
 from nltk.corpus import stopwords
 import fasttext
+import plotly.express as px
+
 
 nltk.download("punkt") # Pre-trained to tokenize in English
 nltk.download("stopwords") # List of stopwords, for multiple languages
@@ -24,11 +26,30 @@ countries = list(filter(lambda x: x!="" and x!= " Other states " and x!="and", l
 countries = countries[3:-142]
 
 # SETTING UP THE DATAFRAME FOR COUNTRIES
-dfCountries = pd.DataFrame(index = countries, columns = ["Counter"])
-dfCountries.loc[:, :] = 0
+dfCountries = pd.DataFrame(index = countries, columns = ["Counter", "Fips"])
+dfCountries.loc[:, "Counter"] = 0
 unkownCountries = 0
 #print(df)
 
+
+# GET THE 3 CODE FIPS FOR COUNTRIES
+response = requests.get("https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3")
+tree = html.fromstring(response.text)
+codes = tree.xpath('//div/div[@class="plainlist"]')
+fipsPairs = codes[0].text_content()[63:]
+print(fipsPairs)
+fipsPairs = fipsPairs.replace(u'\xa0', u' ') # Prevents \xa0 between words
+fipsPairs = re.sub(" \(.*\)", "", fipsPairs)
+listFipsPairs = fipsPairs.split("\n")[:-1] # Up to -1 to remove a last empty string in the list
+
+for i in range(len(listFipsPairs)):
+   (fip, *country) = listFipsPairs[i].split()
+   country = " ".join(country)
+   if(country in countries):
+      dfCountries.loc[country, "Fips"] = fip
+
+#print(dfCountries)
+print(dfCountries.to_string())
 
 # CRAWL TWITTER DATA
 consumer_key= 'CKXyrLIRjOoEPwDisGM3uLvSN'
@@ -164,6 +185,7 @@ if(DEBUG_CLASSIFIED_COUNTRIES):
 ######################################################################################
 #print(dfTweets)
 
-
-
+fig = px.choropleth(dfCountries, locations="Fips",
+                    color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
+fig.show()
 
