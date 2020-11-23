@@ -9,6 +9,17 @@ import nltk
 from nltk.tokenize import word_tokenize 
 from nltk.corpus import stopwords
 import fasttext
+import plotly.express as px
+
+
+
+from urllib.request import urlopen
+import json
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+    counties = json.load(response)
+
+
+
 
 nltk.download("punkt") # Pre-trained to tokenize in English
 nltk.download("stopwords") # List of stopwords, for multiple languages
@@ -35,7 +46,7 @@ unkownCountries = 0
 #print(df)
 
 # SETTING UP THE DATAFRAME FOR SENTIMENTS
-sentiments = ["empty", "sadness", "enthusiasm", "neutral", "worry", "surprise", "love", "fun", "hate", "happiness"]
+sentiments = ["empty", "sadness", "enthusiasm", "neutral", "worry", "surprise", "love", "fun", "hate", "happiness", "toxic"]
 sentimentDF = pd.DataFrame(index = sentiments, columns = ["Counter"])
 sentimentDF.loc[:, :] = 0
 
@@ -179,7 +190,7 @@ for tweet in tweets["statuses"]:
    prob = isToxic/len(tweetTokensNoSW)*100
    if(prob >= toxicitySensitivity):
       #print("Detected to be toxic")
-      toxicTweetsCounter += 1
+       sentimentDF.loc["toxic", "Counter"] += 1
       #continue
 
 
@@ -191,7 +202,6 @@ for tweet in tweets["statuses"]:
    sentiment = re.sub("__label__", "", prediction_emotion[0][0]);
    print(sentiment);
    sentimentDF.loc[sentiment, "Counter"] += 1
-   print(sentimentDF)
 
    # TWEET LOCATION
 
@@ -219,6 +229,12 @@ for tweet in tweets["statuses"]:
       unkownCountries += 1
       if(DEBUG_CLASSIFICATION_COUNTRIES): print("Something went wrong:", er) 
    #dfTweets = dfTweets.append({"Tweet": tweet["text"]}, ignore_index = True)
+
+
+
+fig = px.bar(sentimentDF, x=sentiments, y='Counter')
+fig.show()
+
 
 ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION INFO FOR THE TWEETS ############
 DEBUG_CLASSIFIED_COUNTRIES = False
