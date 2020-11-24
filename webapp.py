@@ -30,14 +30,17 @@ app = dash.Dash(__name__)
 
 app.layout = dhtml.Div(
     children = [
-        dhtml.Img(id="friday", src = app.get_asset_url('fridayLogo.png')),
+        dhtml.Img(id="friday", src = app.get_asset_url('fridayLogo.png'), width = 400),
         dcc.Textarea(id = "keyword"), 
         dcc.Textarea(id = "numTweets"),
         dhtml.Button('Submit', id='submit', n_clicks=0),
-        dhtml.Div(
+        dhtml.P(
             id = "spam_holder"
         ),
         dcc.Graph(id = "worldmap"),
+        dhtml.P(
+            id = "unkownCountry"
+        ),
         dcc.Graph(id = "sentiments")
 
     ]
@@ -46,6 +49,7 @@ app.layout = dhtml.Div(
 @app.callback(
     [
         Output(component_id = "spam_holder", component_property = "children"), # Display spam counter
+        Output(component_id = "unkownCountry", component_property = "children"), # Display spam counter
         Output(component_id = "worldmap", component_property = "figure"),
         Output(component_id = "sentiments", component_property = "figure")
     ],
@@ -291,7 +295,9 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
     worldMap = px.choropleth(dfCountries, locations="Code",
                         color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
 
-    return (dhtml.H1('You have entered: \n{}'.format(keyword)), worldMap, sentimentCols)
+    return (dhtml.P('Tweets detected to be spam: \n{}'.format(spamTweetsCounter)),
+            dhtml.P('Tweets from unkown country: \n{}'.format(unkownCountries)),
+            worldMap, sentimentCols)
 
 if __name__ == '__main__':
     app.run_server(debug=False)
