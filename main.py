@@ -80,8 +80,8 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, parser = JSONParser())
 
 
-keyword = "#wpmalang"  #KEYWORD TO SEARCH
-numTweets = 2
+keyword = "@MKBHD"  #KEYWORD TO SEARCH
+numTweets = 1
 tweets = api.search(keyword + " -filter:retweets", count = numTweets, tweet_mode='extended')
 
 translator = Translator()
