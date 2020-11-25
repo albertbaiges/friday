@@ -42,11 +42,19 @@ app.layout = dhtml.Div(
                 dhtml.P(
                     id = "spam_holder"
                 ),
-                dcc.Graph(id = "worldmap"),
+                dhtml.Div( id = "mapContainer",
+                    children  =[
+                        dcc.Graph(id = "worldmap")
+                    ]    
+                ),
                 dhtml.P(
                     id = "unkownCountry"
                 ),  
-                dcc.Graph(id = "sentiments")
+                dhtml.Div(id = "sentimentsContainer",
+                    children = [
+                        dcc.Graph(id = "sentiments")
+                    ]
+                )
             ]
         )
     ]
@@ -302,8 +310,8 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
                         color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
 
 
-    return (dhtml.P('Tweets detected to be spam: \n{}'.format(spamTweetsCounter)),
-            dhtml.P('Tweets from unkown country: \n{}'.format(unkownCountries)),
+    return ('Tweets detected to be spam: \n{}'.format(spamTweetsCounter),
+            'Tweets from unkown country: \n{}'.format(unkownCountries),
             worldMap, sentimentCols)
 
 if __name__ == '__main__':

@@ -53,6 +53,12 @@ Button{
     width: 60wh;
 }
 
+#mapContainer{
+    float: left;
+    width: 500px;
+}
+
 #sentiments{
-    
+    float: left;
+    width: 500px;
 }
