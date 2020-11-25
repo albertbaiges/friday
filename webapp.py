@@ -26,23 +26,29 @@ toxicitySensitivity = 20
 
 
 app = dash.Dash(__name__)
-
+app.title = "FRIDAY"
 
 app.layout = dhtml.Div(
     children = [
-        dhtml.Img(id="friday", src = app.get_asset_url('fridayLogo.png'), width = 400),
-        dcc.Textarea(id = "keyword"), 
-        dcc.Textarea(id = "numTweets"),
-        dhtml.Button('Submit', id='submit', n_clicks=0),
-        dhtml.P(
-            id = "spam_holder"
-        ),
-        dcc.Graph(id = "worldmap"),
-        dhtml.P(
-            id = "unkownCountry"
-        ),
-        dcc.Graph(id = "sentiments")
-
+        dhtml.Div( id="search",
+            children = [
+                dhtml.Img(id="friday", src = app.get_asset_url('fridayLogo.png'), width = 400),
+                dcc.Textarea(id = "keyword"), 
+                dcc.Textarea(id = "numTweets"),
+                dhtml.Button('Submit', id='submit', n_clicks=0)
+        ]),
+        dhtml.Div( id= "results",
+            children = [
+                dhtml.P(
+                    id = "spam_holder"
+                ),
+                dcc.Graph(id = "worldmap"),
+                dhtml.P(
+                    id = "unkownCountry"
+                ),  
+                dcc.Graph(id = "sentiments")
+            ]
+        )
     ]
 )
 
@@ -294,6 +300,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
     worldMap = px.choropleth(dfCountries, locations="Code",
                         color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
+
 
     return (dhtml.P('Tweets detected to be spam: \n{}'.format(spamTweetsCounter)),
             dhtml.P('Tweets from unkown country: \n{}'.format(unkownCountries)),

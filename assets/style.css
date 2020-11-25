@@ -1,7 +1,9 @@
 body{
     font-family : sans-serif;
 }
-
+#search{
+    height: 100vh;
+}
 Img{
     display:block;
     margin:auto;  
@@ -37,10 +39,20 @@ Button{
     font-size: 180%;
 }
 
+
+#results{
+    height:100vh;
+   
+    background-color: #e0e0eb;
+    
+    
+}
+
 #worldmap{
-    /*display:none;*/
+    
+    width: 60wh;
 }
 
 #sentiments{
-    /*display:none;*/
+    
 }
