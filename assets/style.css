@@ -1,0 +1,46 @@
+body{
+    font-family : sans-serif;
+}
+
+Img{
+    display:block;
+    margin:auto;  
+    margin-top:2%;
+    width:30%;
+}
+
+Textarea{
+    border: 1px solid #b1b1cd;
+    display:inline-flex; 
+    height:60px;
+    background-color:#e0e0eb;
+    margin-top:2%;
+    font-size: 200%;
+}
+
+#keyword{
+
+    margin-left: 15% ;
+    width: 700px;
+}
+#numTweets{
+    margin: auto 0 auto 7%;
+    width: 350px;
+}
+
+Button{
+    margin: 2% 0 0 47%;
+    height:50px;
+    width:120px;
+    border-radius:5%;
+    background-color:  #b1b1cd;
+    font-size: 180%;
+}
+
+#worldmap{
+    /*display:none;*/
+}
+
+#sentiments{
+    /*display:none;*/
+}

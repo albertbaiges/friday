@@ -191,7 +191,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             spamTweetsCounter += 1
             #continue
 
-        model = fasttext.train_supervised("training.txt")
+        model = fasttext.train_supervised("training.txt", thread=32)
         #print("Joined cleaned tweet")
         #print(' '.join(tweetTokensNoSW))
         #print(' '.join(tweetTokensNoSW))
@@ -244,7 +244,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
 
         # SENTIMENT ANALISIS
-        model_emotions = fasttext.train_supervised("training_emotions.txt")
+        model_emotions = fasttext.train_supervised("training_emotions.txt", thread = 32)
         prediction_emotion = model_emotions.predict(tweetNoSW)
         print("Reached")
         sentiment = re.sub("__label__", "", prediction_emotion[0][0]);
