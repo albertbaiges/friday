@@ -39,22 +39,24 @@ app.layout = dhtml.Div(
         ]),
         dhtml.Div( id= "results",
             children = [
-                dhtml.P(
-                    id = "spam_holder"
-                ),
-                dhtml.Div( id = "mapContainer",
-                    children  =[
-                        dcc.Graph(id = "worldmap")
-                    ]    
-                ),
-                dhtml.P(
-                    id = "unkownCountry"
-                ),  
                 dhtml.Div(id = "sentimentsContainer",
                     children = [
                         dcc.Graph(id = "sentiments")
                     ]
+                ),
+                dhtml.P(
+                    id = "spam_holder"
+                ),
+                
+                dhtml.P(
+                    id = "unkownCountry"
+                ), 
+                dhtml.Div( id = "mapContainer",
+                    children  =[
+                        dcc.Graph(id = "worldmap")
+                    ]    
                 )
+
             ]
         )
     ]
@@ -62,6 +64,8 @@ app.layout = dhtml.Div(
 
 @app.callback(
     [
+        Output(component_id="results", component_property = "style"),
+
         Output(component_id = "spam_holder", component_property = "children"), # Display spam counter
         Output(component_id = "unkownCountry", component_property = "children"), # Display spam counter
         Output(component_id = "worldmap", component_property = "figure"),
@@ -310,7 +314,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
                         color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
 
 
-    return ('Tweets detected to be spam: \n{}'.format(spamTweetsCounter),
+    return ({"display":"block"},'Tweets detected to be spam: \n{}'.format(spamTweetsCounter),
             'Tweets from unkown country: \n{}'.format(unkownCountries),
             worldMap, sentimentCols)
 

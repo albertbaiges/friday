@@ -41,24 +41,37 @@ Button{
 
 
 #results{
+    display:none;
     height:100vh;
-   
     background-color: #e0e0eb;
     
-    
-}
-
-#worldmap{
-    
-    width: 60wh;
-}
+    }
 
 #mapContainer{
-    float: left;
-    width: 500px;
+    clear: left;
 }
 
-#sentiments{
+#sentimentsContainer{
     float: left;
     width: 500px;
+    margin: 10px 50px 15px 60px;
+
+}
+
+#spam_holder{
+    height: 100px;
+    width: 100px;
+    color: black;
+    margin-left: 600px;
+    margin-top:320px;
+
+}
+
+#unkownCountry{
+    height: 100px;
+    width: 100px;
+    color: BLACK;
+    margin-left: 600px;
+    margin-top: 320px;
+    
 }
