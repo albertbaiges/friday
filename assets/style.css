@@ -2,8 +2,14 @@ body{
     font-family : sans-serif;
 }
 #search{
-    height: 100vh;
+    height: 90vh;
 }
+
+#emptyPrompt {
+    display: none;
+    color: red;
+}
+
 Img{
     display:block;
     margin:auto;  
@@ -70,7 +76,7 @@ Button{
 #unkownCountry{
     height: 100px;
     width: 100px;
-    color: BLACK;
+    color: black;
     margin-left: 600px;
     margin-top: 320px;
     

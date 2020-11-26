@@ -28,6 +28,7 @@ toxicitySensitivity = 20
 app = dash.Dash(__name__)
 app.title = "FRIDAY"
 
+
 app.layout = dhtml.Div(
     children = [
         dhtml.Div( id="search",
@@ -35,37 +36,41 @@ app.layout = dhtml.Div(
                 dhtml.Img(id="friday", src = app.get_asset_url('fridayLogo.png'), width = 400),
                 dcc.Textarea(id = "keyword"), 
                 dcc.Textarea(id = "numTweets"),
-                dhtml.Button('Submit', id='submit', n_clicks=0)
-        ]),
-        dhtml.Div( id= "results",
-            children = [
-                dhtml.Div(id = "sentimentsContainer",
-                    children = [
-                        dcc.Graph(id = "sentiments")
-                    ]
-                ),
-                dhtml.P(
-                    id = "spam_holder"
-                ),
+                dhtml.Button('Submit', id='submit', n_clicks=0),
+                dhtml.P("Both boxes must be filled", id = "emptyPrompt")
                 
-                dhtml.P(
-                    id = "unkownCountry"
-                ), 
-                dhtml.Div( id = "mapContainer",
-                    children  =[
-                        dcc.Graph(id = "worldmap")
-                    ]    
-                )
-
-            ]
-        )
+        ]),
+        dcc.Loading(
+            dhtml.Div( id= "results",
+                children = [
+                    dhtml.Div(id = "sentimentsContainer",
+                        children = [
+                            dcc.Graph(id = "sentiments")
+                        ]
+                    ),
+                    dhtml.P(
+                        id = "spam_holder"
+                    ),
+                    
+                    dhtml.P(
+                        id = "unkownCountry"
+                    ), 
+                    dhtml.Div( id = "mapContainer",
+                        children  =[
+                            dcc.Graph(id = "worldmap")
+                        ]    
+                    )
+                ]
+        ), type="graph", loading_state = {"is_loading": True})
     ]
 )
 
 @app.callback(
     [
+        Output(component_id = "keyword", component_property = "style"),  # Used to style error nothing entered
+        Output(component_id = "numTweets", component_property = "style"), # Used to style error nothing entered
+        Output(component_id = "emptyPrompt", component_property = "style"), # Used to style error nothing entered
         Output(component_id="results", component_property = "style"),
-
         Output(component_id = "spam_holder", component_property = "children"), # Display spam counter
         Output(component_id = "unkownCountry", component_property = "children"), # Display spam counter
         Output(component_id = "worldmap", component_property = "figure"),
@@ -83,6 +88,9 @@ app.layout = dhtml.Div(
 def performAnalisis(n_clicksButton, keyword, numTweets):
     if n_clicksButton == 0:
         raise dash.exceptions.PreventUpdate
+
+    if (keyword is None or numTweets is None):
+        return ({"border-color": "red"}, {"border-color": "red"}, {"display":"inline"},{}, "", "", {}, {})
 
     unkownCountries = 0
     #print(df)
@@ -314,7 +322,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
                         color="Counter", color_continuous_scale=px.colors.sequential.Plasma)
 
 
-    return ({"display":"block"},'Tweets detected to be spam: \n{}'.format(spamTweetsCounter),
+    return ({}, {}, {"display": "none"}, {"display":"block"},'Tweets detected to be spam: \n{}'.format(spamTweetsCounter),
             'Tweets from unkown country: \n{}'.format(unkownCountries),
             worldMap, sentimentCols)
 
