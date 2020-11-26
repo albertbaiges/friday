@@ -43,6 +43,7 @@ Button{
     border-radius:5%;
     background-color:  #b1b1cd;
     font-size: 180%;
+    cursor: pointer;
 }
 
 
@@ -59,25 +60,31 @@ Button{
 
 #sentimentsContainer{
     float: left;
-    width: 500px;
-    margin: 10px 50px 15px 60px;
+    width: 600px;
+    margin:  25px 0 25px 300px;
 
 }
 
 #spam_holder{
-    height: 100px;
-    width: 100px;
+    float:right;
+    height: 150px;
+    width: 250px;
     color: black;
-    margin-left: 600px;
-    margin-top:320px;
+    margin-right: 450px;
+    margin-top:60px;
+    background-color:  #b1b1cd;
+    font-size: 200%;
 
 }
 
 #unkownCountry{
-    height: 100px;
-    width: 100px;
+    float :right;
+    height: 150px;
+    width: 250px;
+    margin-top: 50px;
+    background-color:  #b1b1cd;
+    font-size: 200%;
+    margin-right: 450px;
     color: black;
-    margin-left: 600px;
-    margin-top: 320px;
     
 }
