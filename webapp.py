@@ -171,14 +171,12 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         
         # FUTHER SPAM DETECTION
         # Clean de tweet text -> Removing hashtags and URLs
-        tweetCleaned = re.sub("(@[A-Za-z0-9_-]*[ ])|(#[A-Za-z0-9_-]*[ ])|http[s]*[.:/A-Za-z0-9_-]*|[.,;:]", "", tweetText)
+        tweetCleaned = re.sub("(@[A-Za-z0-9_-]*)|(#[A-Za-z0-9_-]*)|(http[s]*[.:/A-Za-z0-9_-]*)|[.,;:]", "", tweetText)
                                 # There is no need to remove phone number because there are not, if it had phone number it was directly spam
         #print(tweetCleaned)
         #Removing special characters
         tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned)
         # Skip futher analysis if tweet cleaned has no text in it 
-        if(tweetCleaned == ""):
-            continue
         print("Tweet Cleaned:")
         print(tweetCleaned)
         # Separate text into individual words (only works for english -> punkt is pretrained for english)
@@ -188,6 +186,9 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         for i in range(len(tweetTokens)):
             tweetTokens[i] = tweetTokens[i].lower()
         #print(tweetTokens)
+        if(len(tweetTokens) == 0):
+            print("It was an empty tweet, skipping")
+            continue
         # Remove stop words (tweetTokensNo)(S)top(W)ords
         englishStopWords = stopwords.words("english")
         tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
