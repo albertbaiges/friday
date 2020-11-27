@@ -106,7 +106,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
     tree = html.fromstring(response.text)
     codes = tree.xpath('//div/div[@class="plainlist"]')
     fipsPairs = codes[0].text_content()[63:]
-    print(fipsPairs)
+    #print(fipsPairs)
     fipsPairs = fipsPairs.replace(u'\xa0', u' ') # Prevents \xa0 between words
     fipsPairs = re.sub(" \(.*\)", "", fipsPairs)
     listFipsPairs = fipsPairs.split("\n")[:-1] # Up to -1 to remove a last empty string in the list
@@ -125,7 +125,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
 
     #print(dfCountries)
-    print(dfCountries.to_string())
+    #print(dfCountries.to_string())
 
     # CRAWL TWITTER DATA
     consumer_key= 'CKXyrLIRjOoEPwDisGM3uLvSN'
@@ -152,7 +152,8 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
     for tweet in tweets["statuses"]:
         # Getting text in the text
         tweetText = tweet["full_text"]
-        #print(tweetText)
+        print("Tweet Text:")
+        print(tweetText)
         ############ EARLY SPAM DETECTION ############ 
         # Find hashtags in the tweet
         hashtags = re.findall("#[A-Za-z0-9_]*", tweet["full_text"])
@@ -166,7 +167,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             # DEBUG -> Display if it was marked as spam
             #print("Detected as spam")
             spamTweetsCounter = spamTweetsCounter + 1
-            #continue       # Skip further analysis
+            continue       # Skip further analysis
         
         # FUTHER SPAM DETECTION
         # Clean de tweet text -> Removing hashtags and URLs
@@ -174,8 +175,12 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
                                 # There is no need to remove phone number because there are not, if it had phone number it was directly spam
         #print(tweetCleaned)
         #Removing special characters
-        tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned) 
-        #print(tweetCleaned)
+        tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned)
+        # Skip futher analysis if tweet cleaned has no text in it 
+        if(tweetCleaned == ""):
+            continue
+        print("Tweet Cleaned:")
+        print(tweetCleaned)
         # Separate text into individual words (only works for english -> punkt is pretrained for english)
         tweetTokens = word_tokenize(tweetCleaned)
         #print(tweetTokens)
@@ -212,7 +217,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         prob = isSpam/len(tweetTokensNoSW)*100 # Will consider it to be spam above 20-25 %
         #print(len(tweetTokensNoSW))
         #print(prob)
-        if(prob >= toxicitySensitivity):
+        if(prob >= spamSensitivity):
             #print("Detected to be spam")
             spamTweetsCounter += 1
             #continue
