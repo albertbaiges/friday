@@ -16,6 +16,7 @@ import fasttext
 import plotly.express as px
 from langdetect import detect 
 from nltk.tokenize.toktok import ToktokTokenizer
+import unidecode
 
 nltk.download("punkt") # Pre-trained to tokenize in English
 nltk.download("stopwords") # List of stopwords, for multiple languages
@@ -27,6 +28,9 @@ toktok = ToktokTokenizer()
 spamSensitivity = 20
 toxicitySensitivity = 20
 
+# Dictionary Country Name in Country's language to english (differents)
+countryNamesTrans = {"Deutschland": "Germany", "España": "Spain", "United Kingdom": "United Kingdom of Great Britain and Northern Ireland", 
+                    "England": "United Kingdom of Great Britain and Northern Ireland", "USA": "United States of America"}
 
 app = dash.Dash(__name__)
 app.title = "FRIDAY"
@@ -132,7 +136,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
 
     #print(dfCountries)
-    #print(dfCountries.to_string())
+    print(dfCountries.to_string())
 
     # CRAWL TWITTER DATA
     consumer_key= 'CKXyrLIRjOoEPwDisGM3uLvSN'
@@ -188,7 +192,8 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         print("Tweet Cleaned:")
         print(tweetCleaned)
 
-
+        if(tweetCleaned == "" or re.sub("[ ]+", "", tweetCleaned) == ""):
+            continue
         language = detect(tweetCleaned)
         if(language == "en"):
             # Separate text into individual words (only works for english -> punkt is pretrained for english)
@@ -205,6 +210,8 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             englishStopWords = stopwords.words("english")
             tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
             #print(tweetTokensNoSW)
+            if(len(tweetTokensNoSW)==0):
+                continue
             tweetNoSW = ' '.join(tweetTokensNoSW)
 
 
@@ -304,7 +311,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             # Convert text tokens to lower case
             for i in range(len(tweetTokens)):
                 tweetTokens[i] = tweetTokens[i].lower()
-            #print(tweetTokens)
+            print(tweetTokens)
             if(len(tweetTokens) == 0):
                 print("It was an empty tweet, skipping")
                 continue
@@ -312,6 +319,8 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             spanishStopWords = stopwords.words("spanish")
             tweetTokensNoSW = list(filter(lambda x: x not in spanishStopWords, tweetTokens))
             print(tweetTokensNoSW)
+            if(len(tweetTokensNoSW)==0):
+                continue
             tweetNoSW = ' '.join(tweetTokensNoSW)
             print(tweetNoSW)
 
@@ -326,7 +335,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
             isSpam = 0
             for token in tweetTokensNoSW:
-                if(token in spamWordList):
+                if(token in spamWordlistSpa):
                     isSpam = isSpam + 1
 
             prob = isSpam/len(tweetTokensNoSW)*100
@@ -344,28 +353,27 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
         DEBUG_CLASSIFICATION_COUNTRIES = False
         #########################################################################################
-        try: 
-            loc = translator.translate(tweet["user"]["location"], dest = 'en').text
-            if(DEBUG_CLASSIFICATION_COUNTRIES): print("The location of the tweet:", loc)
-            flagUnkown = True
-            for word in loc.split():
-                if(DEBUG_CLASSIFICATION_COUNTRIES): print("Checking", word)
-                if (word in dfCountries.index):
-                    if(DEBUG_CLASSIFICATION_COUNTRIES): print(word, "appears in the dataframe")
-                    dfCountries.loc[word, "Counter"] += 1
-                    if(DEBUG_CLASSIFICATION_COUNTRIES): print("Increased cound for", word, "in the dataframe")
-                    flagUnkown = False
-                    break
+        
+        #countryNamesTrans
+        #countryNames
+        #dfCountries.loc[word, "Counter"] += 1
+        
+        loc = tweet["user"]["location"]
+        loc = unidecode.unidecode(loc)
+        location = ""
+        for countryName in list(countryNamesTrans.keys()):
+            if(countryName in loc):
+                location = countryNamesTrans.get(countryName)
 
-            if(flagUnkown):
-                if(DEBUG_CLASSIFICATION_COUNTRIES): print("Could not find a country")
-                unkownCountries += 1
-            #print(tweet["text"])
-        except Exception as er:
+        if(location == ""):
+            for countryName in countryNames:
+                if(countryName in re.sub("[,.]", "", loc).split()):
+                    location = countryName
+
+        if(location != ""):
+            dfCountries.loc[location, "Counter"] += 1
+        else: 
             unkownCountries += 1
-            if(DEBUG_CLASSIFICATION_COUNTRIES): print("Something went wrong:", er) 
-        #dfTweets = dfTweets.append({"Tweet": tweet["text"]}, ignore_index = True)
-
 
 
     sentimentCols = px.bar(sentimentDF, x=sentiments, y='Counter')
@@ -385,7 +393,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
 
     return ({}, {}, {"display": "none"}, {"display":"block"},'Tweets detected to be spam: \n{}'.format(spamTweetsCounter),
-            'Tweets from unkown country: \n{}'.format(unkownCountries), 'Tweets in unsupported language: \n{}'.format(unkownCountries),
+            'Tweets from unkown country: \n{}'.format(unkownCountries), 'Tweets in unsupported language: \n{}'.format(unsupportedTweetsCounter),
             worldMap, sentimentCols)
 
 if __name__ == '__main__':
