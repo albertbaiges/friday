@@ -15,10 +15,13 @@ from nltk.corpus import stopwords
 import fasttext
 import plotly.express as px
 from langdetect import detect 
+from nltk.tokenize.toktok import ToktokTokenizer
 
 nltk.download("punkt") # Pre-trained to tokenize in English
 nltk.download("stopwords") # List of stopwords, for multiple languages
 
+#Used to tokenize spanish sentences
+toktok = ToktokTokenizer()
 
 ######### WORDLIST FILTERS SENSITIVITIES [%] #########
 spamSensitivity = 20
@@ -292,6 +295,47 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             print(sentiment);
             sentimentDF.loc[sentiment, "Counter"] += 1
         
+        elif (language == "es"):
+            print("Tweet detected to be spanish")
+
+            # Separate text into individual words (only works for english -> punkt is pretrained for english)
+            tweetTokens = toktok.tokenize(tweetCleaned)
+            #print(tweetTokens)
+            # Convert text tokens to lower case
+            for i in range(len(tweetTokens)):
+                tweetTokens[i] = tweetTokens[i].lower()
+            #print(tweetTokens)
+            if(len(tweetTokens) == 0):
+                print("It was an empty tweet, skipping")
+                continue
+            # Remove stop words (tweetTokensNo)(S)top(W)ords
+            spanishStopWords = stopwords.words("spanish")
+            tweetTokensNoSW = list(filter(lambda x: x not in spanishStopWords, tweetTokens))
+            print(tweetTokensNoSW)
+            tweetNoSW = ' '.join(tweetTokensNoSW)
+            print(tweetNoSW)
+
+            spamWordlistSpa = ["dinero", "oferta", "gratis", "muestras", "exclusivas", "descuento", "seleccionado", "sorteo", "compra", "ahora", "ahorra", "perder", "pierde", "peso", "rapido",
+                            "comprar", "tickets", "entradas", "ganar", "click", "here", "aqui", "oportunidad", "oportunidades", "ganador", "miembro", "reclamar", "reclama", "link",
+                            "confirma", "confirmar", "suscribete", "suscripcion", "responder", "tienda", "obten", "devolucion", "asegurada", "asegurar", "descuento", "viagra", "oderna",
+                            "online", "llama", "acuerdo", "expirar", "expirar", "empezar", "empezado", "importante", "informacion", "instantaneo", "limitado", "tiempo", "nuevo", "cliente",
+                            "clientes", "solo", "toda", "vida", "leer", "especial", "promocion", "quitar", "ultimo", "stock", "unidad", "unidades", "negociar", "chollo", "mejor", "ilimitado",
+                            "hoy", "trato", "visita", "website", "web", "pagina", "evitar", "evita", "cancelar", "barato", "certificado", "felicidades", "credito", "tarjeta", "facil", "terminos",
+                            "garantizar", "garantizado", "hosting", "info", "debito", "regalando", "unete", "miles", "millones", "edad", "mayor", "legal", "nude", "desnudo", "desnudos",
+                            "mesaje", "masajes", "mensajes", "mensaje", "dm", "direct", "message", "rebaja", "rebajas", "ingreso", "urgente"]
+
+            isSpam = 0
+            for token in tweetTokensNoSW:
+                if(token in spamWordList):
+                    isSpam = isSpam + 1
+
+            prob = isSpam/len(tweetTokensNoSW)*100
+
+            if(prob >= spamSensitivity):
+                print("Detected to be spam")
+                spamTweetsCounter += 1
+                #continue
+
         else:
             print("Unsupported language")
             unsupportedTweetsCounter += 1
