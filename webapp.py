@@ -15,7 +15,7 @@ from nltk.tokenize.toktok import ToktokTokenizer
 import unidecode
 
 from countries import country_aplha3_lists
-from crawlTwitter import tweetsWithKeywordJSON
+import crawlTwitter
 
 ######### WORDLIST FILTERS SENSITIVITIES [%] #########
 spamSensitivity = 20
@@ -107,10 +107,6 @@ def toxicPercentage(words):
     return percentage
 
 
-# Twitter Bot
-
-
-
 # Dash application
 app = dash.Dash(__name__)
 app.title = "FRIDAY"
@@ -145,6 +141,9 @@ app.layout = dhtml.Div(
                     dhtml.P(
                         id = "unsupportedLanguage"
                     ), 
+                    dhtml.P(
+                        id = "toxicTweets"
+                    ), 
                     dhtml.Div( id = "mapContainer",
                         children  =[
                             dcc.Graph(id = "worldmap")
@@ -166,6 +165,7 @@ app.layout = dhtml.Div(
         Output(component_id = "spam_holder", component_property = "children"), # Display spam counter
         Output(component_id = "unkownCountry", component_property = "children"), # Display unkown countries counter
         Output(component_id = "unsupportedLanguage", component_property = "children"), # Tweets written on an unsupported lang counter
+        Output(component_id = "toxicTweets", component_property = "children"), # Tweets that are toxic
         Output(component_id = "worldmap", component_property = "figure"), # Graph holder for the world map
         Output(component_id = "sentiments", component_property = "figure") # Graph holder for the sentiments columns graph
     ],
@@ -183,7 +183,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         raise dash.exceptions.PreventUpdate # Do nothing, prevent updating contents
 
     if (keyword is None or numTweets is None): # Prevent updating result contents, but display warning/error
-        return ({"border-color": "red"}, {"border-color": "red"}, {"display":"inline"},{}, "", "", "", {}, {})
+        return ({"border-color": "red"}, {"border-color": "red"}, {"display":"inline"},{}, "", "", "", "", {}, {})
 
     # PREPARE DATAFRAMES
 
@@ -200,7 +200,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
     #CRAWL TWITTER DATA
     # Obtain tweets to be analyzed
-    tweets = tweetsWithKeywordJSON(keyword, numTweets)
+    tweets = crawlTwitter.tweetsWithKeywordJSON(keyword, numTweets)
 
     # Initialize counters
     spamTweetsCounter = 0
@@ -384,6 +384,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
     return ({}, {}, {"display": "none"}, {"display":"block"},'Tweets detected to be spam: \n{}'.format(spamTweetsCounter),
             'Tweets from unkown country: \n{}'.format(unkownCountries), 'Tweets in unsupported language: \n{}'.format(unsupportedTweetsCounter),
+            'Tweets that are toxic: \n{}'.format(toxicTweetsCounter),
             worldMap, sentimentCols)
 
 if __name__ == '__main__':

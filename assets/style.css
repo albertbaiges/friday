@@ -27,13 +27,23 @@ Textarea{
 }
 
 #keyword{
-
-    margin-left: 15% ;
+    display: block;
+    margin: auto;
+    position: relative;
+    left: -18%;
     width: 700px;
+    resize: none;
+    width: 30%;
 }
 #numTweets{
-    margin: auto 0 auto 7%;
+    display: block;
+    margin: auto;
     width: 350px;
+    transform: translateY(-100%);
+    position: relative;
+    left: 10%;
+    resize: none;
+    width: 15%;
 }
 
 Button{
@@ -52,7 +62,7 @@ Button{
     height:100vh;
     background-color: #e0e0eb;
     
-    }
+}
 
 #mapContainer{
     clear: left;
