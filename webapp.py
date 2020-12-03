@@ -13,7 +13,6 @@ import plotly.express as px
 from langdetect import detect 
 from nltk.tokenize.toktok import ToktokTokenizer
 import unidecode
-
 from countries import country_aplha3_lists
 import crawlTwitter
 
@@ -211,7 +210,10 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
     toxicTweetsCounter = 0
 
     # Analyze tweets
-    for tweet in tweets["statuses"]:
+    #for tweet in tweets["statuses"]: # Case where crawlTwitter works with default: up to 100
+    for tweet in tweets:    # Case where crawlTwitter uses pages to get more than 100 tweets
+        tweet = tweet._json # When using more than 100 since we must get the JSON, 
+                                #not necessary when up to 100 since we can tell app to JSONparse it
         tweetText = tweet["full_text"] # Getting text in the text
         print("Tweet Text:")
         print(tweetText)

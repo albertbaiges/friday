@@ -14,9 +14,14 @@ def tweetsWithKeywordJSON(keyword, samples):
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 
-    api = tweepy.API(auth, parser = JSONParser())
+    # ONLY RETRIEVES UP TO 100 TWEETS
+    #api = tweepy.API(auth, parser = JSONParser())
+    #tweets = api.search(keyword + " -filter:retweets", count = samples, tweet_mode='extended')
+    #return tweets
 
-
-    tweets = api.search(keyword + " -filter:retweets", count = samples, tweet_mode='extended')
-
+    # ALLOWS RETRIEVING MORE THAN 100, BUT HAVE TO BE CAREFUL WITH TWITTER API RATE LIMIT
+    api = tweepy.API(auth)
+    tweets = []
+    for tweet in tweepy.Cursor(api.search, q=keyword, tweet_mode='extended').items(int(samples)):
+        tweets.append(tweet)
     return tweets
