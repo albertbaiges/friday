@@ -5,7 +5,7 @@
   <b>Web based python application to obtain location and sentiments of tweets </b>
 </p>
 
-# Insert sample image of the webapp here
+![App Demo](readmeImage/resultsDemo.png)
 
 ## Installation
 Fastest way to deploy this web application is by directly cloning [Friday Repository](https://github.com/albertbaiges/friday)  
