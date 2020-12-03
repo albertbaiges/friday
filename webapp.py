@@ -18,8 +18,8 @@ from countries import country_aplha3_lists
 import crawlTwitter
 
 ######### WORDLIST FILTERS SENSITIVITIES [%] #########
-spamSensitivity = 20
-toxicitySensitivity = 20
+spamSensitivity = 35
+toxicitySensitivity = 35
 
 
 # SET UP
@@ -64,6 +64,7 @@ def spamPercentage(words):
             isSpam = isSpam + 1
     #print("Number of spam words", isSpam)
     percentage = isSpam/len(words)*100 
+    #print(percentage)
     return percentage
 
 
@@ -102,8 +103,9 @@ def toxicPercentage(words):
     for token in words:
         if(token in toxicityWordList):
             isToxic = isToxic + 1
-    
     percentage = isToxic/len(words)*100
+    print(percentage)
+    print("")
     return percentage
 
 
@@ -211,8 +213,8 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
     # Analyze tweets
     for tweet in tweets["statuses"]:
         tweetText = tweet["full_text"] # Getting text in the text
-        #print("Tweet Text:")
-        #print(tweetText)
+        print("Tweet Text:")
+        print(tweetText)
 
         ############ EARLY SPAM DETECTION ############ 
         # Find hashtags in the tweet
@@ -225,7 +227,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         # Mark as spam if too many hashtags or if contains phone number
         if((len(hashtags) > 8) or telf):
             # DEBUG -> Display if it was marked as spam
-            #print("Detected as spam")
+            print("Detected as spam by early detection")
             spamTweetsCounter = spamTweetsCounter + 1
             continue       # Skip further analysis
         
@@ -236,6 +238,10 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         #print(tweetCleaned)
         #Removing special characters
         tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned)
+        # Remove spaces being of sentence
+        tweetCleaned = re.sub("^[ ]*", "", tweetCleaned)
+        #Removing extra spaces
+        tweetCleaned = re.sub("[ ]+", " ", tweetCleaned)
         # Skip futher analysis if tweet cleaned has no text in it 
         print("Tweet Cleaned:")
         print(tweetCleaned)
@@ -267,7 +273,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             #print(len(tweetTokensNoSW))
             #print(prob)
             if(percentageSpam >= spamSensitivity):
-                #print("Detected to be spam")
+                print("Detected to be spam by dictionary")
                 spamTweetsCounter += 1
                 continue
 
@@ -280,7 +286,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
             percentageSpam = toxicPercentage(tweetTokensNoSW)
             if(percentageSpam >= toxicitySensitivity):
-                #print("Detected to be toxic")
+                print("Detected to be toxic by dictionary")
                 toxicTweetsCounter += 1
                 #continue
 
