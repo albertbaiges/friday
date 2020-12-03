@@ -35,7 +35,7 @@ countryNamesTrans = {"Deutschland": "Germany", "España": "Spain", "United Kingd
                     "England": "United Kingdom of Great Britain and Northern Ireland", "USA": "United States of America"}
 
 # Supported emotions/sentiments
-sentiments = ["empty", "sadness", "enthusiasm", "neutral", "worry", "surprise", "love", "fun", "hate", "happiness"]
+sentiments = ["empty", "sadness", "enthusiasm", "neutral", "worry", "surprise", "love", "fun", "hate", "happiness", "anger"]
 
 # Obtaining lists of countries and alpha3 codes
 countryNames, countryCodes = country_aplha3_lists() # Assigned using destructuring
@@ -103,8 +103,7 @@ def toxicPercentage(words):
         if(token in toxicityWordList):
             isToxic = isToxic + 1
     percentage = isToxic/len(words)*100
-    print(percentage)
-    print("")
+    #print(percentage)
     return percentage
 
 
@@ -374,7 +373,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             unkownCountries += 1
 
 
-    sentimentCols = px.bar(sentimentDF, x=sentiments, y='Counter')
+    sentimentCols = px.bar(sentimentDF, x=sentiments, y="Counter", labels = {"x": "Emotions"})
 
 
     ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION INFO FOR THE TWEETS ############

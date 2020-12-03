@@ -2,7 +2,7 @@ body{
     font-family : sans-serif;
 }
 #search{
-    height: 90vh;
+    height: 88vh;
 }
 
 #emptyPrompt {
@@ -31,17 +31,15 @@ Textarea{
     margin: auto;
     position: relative;
     left: -18%;
-    width: 700px;
     resize: none;
     width: 30%;
 }
 #numTweets{
     display: block;
     margin: auto;
-    width: 350px;
     transform: translateY(-100%);
     position: relative;
-    left: 10%;
+    left: 11%;
     resize: none;
     width: 15%;
 }
@@ -60,7 +58,7 @@ Button{
 #results{
     display:none;
     height:100vh;
-    background-color: #e0e0eb;
+    background-color: #f7f7f7;
     
 }
 
@@ -75,26 +73,24 @@ Button{
 
 }
 
-#spam_holder{
-    float:right;
-    height: 150px;
-    width: 250px;
-    color: black;
-    margin-right: 450px;
-    margin-top:60px;
-    background-color:  #b1b1cd;
-    font-size: 200%;
+p {
+    font-size: 1.6em;
+    margin-left: 60%;
+    transform: translateY(350%);
+}
 
+#spam_holder{
 }
 
 #unkownCountry{
-    float :right;
-    height: 150px;
-    width: 250px;
-    margin-top: 50px;
-    background-color:  #b1b1cd;
-    font-size: 200%;
-    margin-right: 450px;
-    color: black;
+
     
+}
+
+#unsupportedLanguage{
+
+}
+
+#toxicTweets{
+
 }
