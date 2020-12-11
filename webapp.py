@@ -41,7 +41,7 @@ sentiments = ["empty", "sadness", "enthusiasm", "neutral", "worry", "surprise", 
 countryNames, countryCodes = country_aplha3_lists() # Assigned using destructuring
 
 # FastText Models
-modelSpam = fasttext.train_supervised("training.txt", thread=32)
+modelSpam = fasttext.train_supervised("training_spam.txt", thread=32)
 modelEmotions = fasttext.train_supervised("training_emotions.txt", thread = 32)
 
 # Detection by dictionaries dictionaries
@@ -56,14 +56,11 @@ def spamPercentage(words):
                             "easy", "terms", "grant", "hosting", "info", "information", "member", "out", "debt", "giving", "away", "guaranteed", "join", "millions",
                             "age", "restrictions", "winning", "consolidate", "earn", "extra", "hidden", "nude", "nudes", "message", "dm"]
             
-    #tokens = word_tokenize(tweetCleanned)
     isSpam = 0
     for token in words: 
         if(token in spamWordList):
             isSpam = isSpam + 1
-    #print("Number of spam words", isSpam)
     percentage = isSpam/len(words)*100 
-    #print(percentage)
     return percentage
 
 
@@ -103,7 +100,6 @@ def toxicPercentage(words):
         if(token in toxicityWordList):
             isToxic = isToxic + 1
     percentage = isToxic/len(words)*100
-    #print(percentage)
     return percentage
 
 
@@ -214,21 +210,18 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         tweet = tweet._json # When using more than 100 since we must get the JSON, 
                                 #not necessary when up to 100 since we can tell app to JSONparse it
         tweetText = tweet["full_text"] # Getting text in the text
-        print("Tweet Text:")
-        print(tweetText)
+        #print("Tweet Text:")
+        #print(tweetText)
 
         ############ EARLY SPAM DETECTION ############ 
         # Find hashtags in the tweet
         hashtags = re.findall("#[A-Za-z0-9_]*", tweet["full_text"])
         # Find phone number in the tweet
         telf = re.findall("[0-9]{9}", tweet["full_text"])
-        # DEBUG -> Display detected hashtags and/or phone number
-        #print("telefono", telf)
-        #print("num hashtags", len(hashtags))
+
         # Mark as spam if too many hashtags or if contains phone number
         if((len(hashtags) > 8) or telf):
-            # DEBUG -> Display if it was marked as spam
-            print("Detected as spam by early detection")
+            #print("Detected as spam by early detection")
             spamTweetsCounter = spamTweetsCounter + 1
             continue       # Skip further analysis
         
@@ -236,90 +229,85 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
         # Clean de tweet text -> Removing hashtags and URLs
         tweetCleaned = re.sub("(@[A-Za-z0-9_-]*)|(#[A-Za-z0-9_-]*)|(http[s]*[.:/A-Za-z0-9_-]*)|[.,;:]", "", tweetText)
                                 # There is no need to remove phone number because there are not, if it had phone number it was directly spam
-        #print(tweetCleaned)
+
         #Removing special characters
         tweetCleaned = re.sub("[^a-zA-Z ]", "", tweetCleaned)
         # Remove spaces being of sentence
         tweetCleaned = re.sub("^[ ]*", "", tweetCleaned)
         #Removing extra spaces
         tweetCleaned = re.sub("[ ]+", " ", tweetCleaned)
-        # Skip futher analysis if tweet cleaned has no text in it 
-        print("Tweet Cleaned:")
-        print(tweetCleaned)
+        #print("Tweet Cleaned:")
+        #print(tweetCleaned)
 
+        # Skip futher analysis if tweet cleaned has no text in it 
         if(tweetCleaned == "" or re.sub("[ ]+", "", tweetCleaned) == ""):
             continue
         language = detect(tweetCleaned)
         if(language == "en"):
             # Separate text into individual words (only works for english -> punkt is pretrained for english)
             tweetTokens = word_tokenize(tweetCleaned)
-            #print(tweetTokens)
+
             # Convert text tokens to lower case
             for i in range(len(tweetTokens)):
                 tweetTokens[i] = tweetTokens[i].lower()
-            #print(tweetTokens)
+
             if(len(tweetTokens) == 0):
-                print("It was an empty tweet, skipping")
+                #print("It was an empty tweet, skipping")
                 continue
+
             # Remove stop words (tweetTokensNo)(S)top(W)ords
             englishStopWords = stopwords.words("english")
             tweetTokensNoSW = list(filter(lambda x: x not in englishStopWords, tweetTokens))
-            #print(tweetTokensNoSW)
+
             if(len(tweetTokensNoSW)==0):
                 continue
             tweetNoSW = ' '.join(tweetTokensNoSW)
 
             percentageSpam = spamPercentage(tweetTokensNoSW)
             
-            #print(len(tweetTokensNoSW))
-            #print(prob)
             if(percentageSpam >= spamSensitivity):
-                print("Detected to be spam by dictionary")
+                #print("Detected to be spam by dictionary")
                 spamTweetsCounter += 1
                 continue
 
-            #print("Joined cleaned tweet")
-            #print(' '.join(tweetTokensNoSW))
-            #print(' '.join(tweetTokensNoSW))
-            #print("Is spam detected with fasttext?")
             prediction = modelSpam.predict(tweetNoSW)
-            #print(prediction)
+            if(prediction[0][0] == "__label__spam"):
+                #print("Detected to be spam by FastText")
+                spamTweetsCounter += 1
+                continue
 
             percentageSpam = toxicPercentage(tweetTokensNoSW)
             if(percentageSpam >= toxicitySensitivity):
-                print("Detected to be toxic by dictionary")
+                #print("Detected to be toxic by dictionary")
                 toxicTweetsCounter += 1
-                #continue
-
-
 
             # SENTIMENT ANALISIS
             prediction_emotion = modelEmotions.predict(tweetNoSW)
-            sentiment = re.sub("__label__", "", prediction_emotion[0][0]);
-            #print(sentiment);
+            sentiment = re.sub("__label__", "", prediction_emotion[0][0])
             sentimentDF.loc[sentiment, "Counter"] += 1
         
         elif (language == "es"):
-            print("Tweet detected to be spanish")
+            #print("Tweet detected to be spanish")
 
             # Separate text into individual words (only works for english -> punkt is pretrained for english)
             tweetTokens = toktok.tokenize(tweetCleaned)
-            #print(tweetTokens)
+
             # Convert text tokens to lower case
             for i in range(len(tweetTokens)):
                 tweetTokens[i] = tweetTokens[i].lower()
-            print(tweetTokens)
+
             if(len(tweetTokens) == 0):
-                print("It was an empty tweet, skipping")
+                #print("It was an empty tweet, skipping")
                 continue
+
             # Remove stop words (tweetTokensNo)(S)top(W)ords
             spanishStopWords = stopwords.words("spanish")
             tweetTokensNoSW = list(filter(lambda x: x not in spanishStopWords, tweetTokens))
-            print(tweetTokensNoSW)
+
             if(len(tweetTokensNoSW)==0):
                 continue
             tweetNoSW = ' '.join(tweetTokensNoSW)
-            print(tweetNoSW)
+
 
             spamWordlistSpa = ["dinero", "oferta", "gratis", "muestras", "exclusivas", "descuento", "seleccionado", "sorteo", "compra", "ahora", "ahorra", "perder", "pierde", "peso", "rapido",
                             "comprar", "tickets", "entradas", "ganar", "click", "here", "aqui", "oportunidad", "oportunidades", "ganador", "miembro", "reclamar", "reclama", "link",
@@ -328,7 +316,7 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
                             "clientes", "solo", "toda", "vida", "leer", "especial", "promocion", "quitar", "ultimo", "stock", "unidad", "unidades", "negociar", "chollo", "mejor", "ilimitado",
                             "hoy", "trato", "visita", "website", "web", "pagina", "evitar", "evita", "cancelar", "barato", "certificado", "felicidades", "credito", "tarjeta", "facil", "terminos",
                             "garantizar", "garantizado", "hosting", "info", "debito", "regalando", "unete", "miles", "millones", "edad", "mayor", "legal", "nude", "desnudo", "desnudos",
-                            "mesaje", "masajes", "mensajes", "mensaje", "dm", "direct", "message", "rebaja", "rebajas", "ingreso", "urgente"]
+                            "mesaje", "masajes", "mensajes", "mensaje", "dm", "direct", "message", "rebaja", "rebajas", "ingreso", "urgente", "publicidad"]
 
             isSpam = 0
             for token in tweetTokensNoSW:
@@ -338,22 +326,60 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
             prob = isSpam/len(tweetTokensNoSW)*100
 
             if(prob >= spamSensitivity):
-                print("Detected to be spam")
+                #print("Detected to be spam")
                 spamTweetsCounter += 1
-                #continue
+                continue
+
+            toxicWordlistSpa = ['abuso', 'acojonar', 'afollonada', 'afollonado', 'agilipollada', 'agilipollado', 'agilipollar', 'alamierda', 'amamonada', 'amamonado', 'amargada', 'amargado', 'anarquico', 
+                                'anormal', 'asesina', 'asesinar', 'asesino', 'asquerosa', 'asqueroso', 'autoritaria', 'autoritario', 'autoritarismo', 'badajo', 'bastarda', 'bastardo', 'basura', 'berzas',
+                                'berzotas', 'bestia', 'boba', 'bobo', 'bollera', 'boluda', 'boludez', 'boludo', 'borracha', 'borrachaza', 'borrachazo', 'borrachera', 'borracho', 'borrachuza', 'borrachuzo',
+                                'bronca', 'bufon', 'bufona', 'bujarra', 'bujarrilla', 'bujarron', 'cabreada', 'cabreado', 'cabrear', 'cabreo', 'cabron', 'cabrona', 'cabronada', 'cabroncete', 'caca',
+                                'cachonda', 'cachondeo', 'cachondo', 'cagada', 'cagado', 'cagar', 'cagarla', 'cagarse', 'cagoen', 'cagon', 'cagona', 'calentorra', 'calentorro', 'calzonazo',
+                                'calzonazos', 'camero', 'celadores', 'capulla', 'capullo', 'carajo', 'carajota', 'carajote', 'carallo', 'carnudo', 'cascar', 'cascarla', 'casquete', 'cateta',
+                                'cateto', 'cazurra', 'cazurro', 'cencular', 'cenutrio', 'cepillar', 'ceporra', 'ceporro', 'chapero', 'chaquetera', 'chaquetero', 'chichi', 'chingada', 'chingar',
+                                'chivata', 'chivato', 'chocho', 'chochona', 'choriza', 'chorizo', 'chorra', 'chorrada', 'chorva', 'chula', 'chulilla', 'chulillo', 'chulita', 'chulito', 'chulo',
+                                'chuloputas', 'chumino', 'chupame', 'chupamela', 'chupopteros', 'churra', 'churrita', 'chutarse', 'chute', 'cipote', 'cipoton', 'cojon', 'cojones', 'cojonudo',
+                                'comemierda', 'comino', 'coño', 'cornuda', 'cornudo', 'correrse', 'corrida', 'corrupta', 'corrupto', 'cretina', 'cretino', 'cuerno', 'cuesco', 'culear', 'culero',
+                                'cutre', 'decapitar', 'decojones', 'degollar', 'descojonarse', 'descojone', 'descojono', 'desequilibrada', 'desequilibrado', 'desgraciada', 'desgraciado', 'despota',
+                                'dictatorial', 'doctorcilla', 'doctorcillo', 'doctorcita', 'doctorcito', 'drogata', 'embustera', 'embustero', 'encabronar', 'encubrimiento', 'encular', 'enganchada',
+                                'enganchado', 'engañabobos', 'engañar', 'engaño', 'enmascaramiento', 'enmascarar', 'envenenar', 'escocida', 'escocido', 'estafa', 'estafador', 'estafadora',
+                                'estupida', 'estupido', 'facha', 'falo', 'farsante', 'folla', 'follada', 'follado', 'follador', 'folladora', 'follamos', 'follando', 'follar', 'follarse', 'follo',
+                                'follon', 'follones', 'friki', 'frustrada', 'frustrado', 'fulana', 'fulanita', 'fulanito', 'fulano', 'furcia', 'gallorda', 'gamberra', 'gamberro', 'gañan', 'gili',
+                                'gilipolla', 'gilipollas', 'gilipuertas', 'gitaneo', 'granuja', 'greñudo', 'guarra', 'guarrita', 'guarrito', 'guarro', 'guay', 'hijadeputa', 'hijaputa', 'hijodeputa',
+                                'hijoputa', 'hipocrita', 'hostia', 'huevo', 'huevón', 'huevona', 'idiota', 'ignorante', 'imbecil', 'impresentable.', 'jiñar', 'jiñarse', 'joder', 'joderos', 'jódete',
+                                'jodida', 'jodido', 'jodienda', 'joputa', 'ladrón', 'ladrona', 'lameculo', 'litrona', 'loca', 'loco', 'loquera', 'loquero', 'machacarla', 'machorra', 'mafia', 'mafiosa',
+                                'mafioso', 'majadera', 'majadero', 'malafolla', 'malfolla', 'malfollada', 'malfollado', 'malnacida', 'malnacido', 'malparida', 'malparido', 'mamada', 'mamamela',
+                                'mamarla', 'mamarracha', 'mamarracho', 'mameluco', 'mamon', 'mamona', 'mamporrero', 'mangante', 'marica', 'maricon', 'maricona', 'mariconazo', 'marimacha', 'marimacho',
+                                'mariposon', 'masacre', 'matanza', 'matar', 'matasanos', 'mato', 'maton', 'mear', 'mecorro', 'medicucha', 'medicucho', 'mediquilla', 'mediquillo', 'mejiño', 'melapelan',
+                                'memeo', 'mentecata', 'mentecato', 'mentirosa', 'mentiroso', 'mierda', 'minga', 'miserable', 'mocosa', 'mocoso', 'mogollon', 'mojigata', 'mojigato', 'mojino', 'mojon',
+                                'moña', 'morralla', 'mugra', 'mugriente', 'mugrosa', 'mugroso', 'nabo', 'nalgas', 'negligencia', 'negligente', 'negrata', 'negrera', 'negrero', 'opresor', 'opresora',
+                                'paja', 'pajera', 'pajero', 'pajillera', 'pajillero', 'palurda', 'palurdo', 'pamplina', 'panoli', 'papanatas', 'pasota', 'payasa', 'payaso', 'pecora', 'pedo',
+                                'pedorra', 'pedorro', 'pelandrusca', 'pelandrusco', 'pendeja', 'pendejo', 'peo', 'perraso', 'perversa', 'perverso', 'pesetera', 'pesetero', 'peta', 'petarda',
+                                'petardo', 'picha', 'pichafloja', 'pija', 'pijar', 'pijo', 'pijotera', 'pijotero', 'pilila', 'pinga', 'piojosa', 'piojoso', 'pipote', 'pirada', 'pirado', 'polla',
+                                'pollada', 'pollón', 'porcojones', 'porculo', 'porelculo', 'porrera', 'porrero', 'porro', 'pringada', 'pringado', 'proxeneta', 'puerca', 'puerco', 'puñeta',
+                                'puñetera', 'puñetero', 'puta', 'putada', 'putero', 'putilla', 'putillo', 'putita', 'putito', 'puto', 'puton', 'putona', 'queosjodan', 'querella', 'rabo',
+                                'ramera', 'ramero', 'ratera', 'ratero', 'reinona', 'reputa', 'roña', 'roñosa', 'roñoso', 'sabandija', 'sangrais', 'sangrantes', 'sarasa', 'sarna', 'sarnosa',
+                                'sarnoso', 'sinvergüenza', 'soplaflautas', 'soplapollas', 'subidon', 'subnormal', 'sudaca', 'tarada', 'tarado', 'taruga', 'tarugo', 'teta', 'verga',
+                                'tocacojones', 'tocapelotas', 'tonta', 'tonto', 'torpe', 'tortillera', 'toto', 'tragapollas', 'tragasables', 'trapicheo', 'truño', 'tusmuertos', 'usurera',
+                                'usurero', 'vividor', 'vividora', 'yoya', 'zangana', 'zangano', 'zopenca', 'zopenco', 'zorra', 'zorrilla', 'zorro', 'zorron', 'zorrona', 'zurullo']
+
+            isToxic = 0
+            for token in tweetTokensNoSW:
+                if(token in toxicWordlistSpa):
+                    isToxic = isToxic + 1
+            prob = isToxic/len(tweetTokensNoSW)*100
+
+            if(prob >= toxicitySensitivity):
+                #print("Detected to be toxic")
+                toxicTweetsCounter += 1
 
         else:
-            print("Unsupported language")
+            #print("Unsupported language")
             unsupportedTweetsCounter += 1
-        # TWEET LOCATION
 
-        ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION PROCESS FOR THE TWEETS ############
-        DEBUG_CLASSIFICATION_COUNTRIES = False
-        #########################################################################################
-        
-        #countryNamesTrans
-        #countryNames
-        #dfCountries.loc[word, "Counter"] += 1
+
+            
+        # TWEET LOCATION
         
         loc = tweet["user"]["location"]
         loc = unidecode.unidecode(loc)
@@ -374,16 +400,6 @@ def performAnalisis(n_clicksButton, keyword, numTweets):
 
 
     sentimentCols = px.bar(sentimentDF, x=sentiments, y="Counter", labels = {"x": "Emotions"})
-
-
-    ############ DEBUG: DIPLAY THE COUNTRY CLASSIFICATION INFO FOR THE TWEETS ############
-    DEBUG_CLASSIFIED_COUNTRIES = False
-    if(DEBUG_CLASSIFIED_COUNTRIES):
-        print(dfCountries)
-        print("Number of tweets without contry:", unkownCountries)
-        print(dfCountries.loc["Spain"])
-    ######################################################################################
-    #print(dfTweets)
 
     worldMap = px.choropleth(dfCountries, locations="Code",
                         color="Counter", color_continuous_scale=px.colors.sequential.Plasma)

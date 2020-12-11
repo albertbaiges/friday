@@ -14,11 +14,9 @@ def country_aplha3_lists():
     tree = html.fromstring(response.text)
     codes = tree.xpath('//div/div[@class="plainlist"]')
     fipsPairs = codes[0].text_content()[63:]
-    #print(fipsPairs)
     fipsPairs = fipsPairs.replace(u'\xa0', u' ') # Prevents \xa0 between words
     fipsPairs = re.sub(" \(.*\)", "", fipsPairs)
     listFipsPairs = fipsPairs.split("\n")[:-1] # Up to -1 to remove a last empty string in the list
-
     countryCodes = []
     countryNames = []
 
