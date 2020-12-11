@@ -4,7 +4,6 @@ import dash_html_components as dhtml
 import pandas as pd
 from dash.dependencies import Input, Output, State
 import re
-from googletrans import Translator
 import nltk 
 from nltk.tokenize import word_tokenize 
 from nltk.corpus import stopwords
