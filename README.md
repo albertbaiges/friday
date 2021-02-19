@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="400" src="assets/fridayLogo.png">
+  <img width="400" src="readmeImage/fridayLogo.jpg">
 </p>
 <p align="center">
   <b>Web based python application to obtain location and sentiments of tweets </b>
